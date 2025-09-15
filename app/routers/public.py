@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, Request, Form, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
-from sqlmodel import select, or_
+from sqlmodel import select, or_, col
 from app.database import SessionDep
 from app.models import Prompt, Category, PromptSubmission
 from typing import List, Dict, Any
@@ -26,9 +26,9 @@ def list_prompts(
         like = f"%{query}%"
         stmt = stmt.where(
             or_(
-                Prompt.title.ilike(like),
-                Prompt.body.ilike(like),
-                Prompt.instructions.ilike(like)
+                col(Prompt.title).ilike(like),
+                col(Prompt.body).ilike(like),
+                col(Prompt.instructions).ilike(like)
             )
         )
     
@@ -123,7 +123,7 @@ async def prompt_detail(request: Request, prompt_id: int, session: SessionDep):
 @router.get("/submit", response_class=HTMLResponse)
 async def submit_form(request: Request, session: SessionDep):
     """Submit prompt form"""
-    categories = session.exec(select(Category).where(Category.parent_id.is_(None))).all()
+    categories = session.exec(select(Category).where(col(Category.parent_id).is_(None))).all()
     return templates.TemplateResponse(
         "submit.html",
         {"request": request, "categories": categories}

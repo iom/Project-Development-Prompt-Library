@@ -11,7 +11,7 @@ from slugify import slugify
 # Add the app directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from sqlmodel import Session, select
+from sqlmodel import Session, select, SQLModel
 from app.database import engine
 from app.models import Category, Prompt
 
@@ -22,6 +22,10 @@ def import_seed_data():
     if not seed_file.exists():
         print(f"Seed file not found: {seed_file}")
         return
+    
+    # Create all tables
+    print("Creating database tables...")
+    SQLModel.metadata.create_all(engine)
     
     print(f"Loading seed data from {seed_file}")
     with open(seed_file, 'r', encoding='utf-8') as f:

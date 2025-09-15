@@ -6,7 +6,7 @@
     <div class="w-1/4">
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold mb-4">Categories</h3>
-            <div id="categories" hx-get="/api/categories" hx-trigger="load">
+            <div id="categories" hx-get="/htmx/categories" hx-trigger="load">
                 Loading categories...
             </div>
         </div>
@@ -39,7 +39,7 @@
         </div>
 
         <!-- Prompts list -->
-        <div id="promptsList" hx-get="/api/prompts" hx-trigger="load">
+        <div id="promptsList" hx-get="/htmx/prompts" hx-trigger="load">
             Loading prompts...
         </div>
     </div>
@@ -53,7 +53,7 @@ function searchPrompts() {
     if (query) params.append('query', query);
     if (platform) params.append('platform', platform);
     
-    htmx.ajax('GET', `/api/prompts?${params.toString()}`, {target: '#promptsList'});
+    htmx.ajax('GET', `/htmx/prompts?${params.toString()}`, {target: '#promptsList'});
 }
 
 // Handle category selection
@@ -65,7 +65,17 @@ function selectCategory(categoryId) {
     if (platform) params.append('platform', platform);
     if (categoryId) params.append('category', categoryId);
     
-    htmx.ajax('GET', `/api/prompts?${params.toString()}`, {target: '#promptsList'});
+    htmx.ajax('GET', `/htmx/prompts?${params.toString()}`, {target: '#promptsList'});
+}
+
+// Copy prompt by ID
+function copyPrompt(promptId) {
+    fetch(`/api/prompts/${promptId}`)
+        .then(response => response.json())
+        .then(data => {
+            copyToClipboard(data.body);
+        })
+        .catch(error => console.error('Error fetching prompt:', error));
 }
 </script>
 {% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - IOM Prompt Library{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+    <p class="text-gray-600 mt-2">Manage prompts, categories, and submissions</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                <i class="fas fa-clock text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <h2 class="text-2xl font-bold text-gray-900">{{ pending_count }}</h2>
+                <p class="text-gray-600">Pending Reviews</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                <i class="fas fa-file-text text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <h2 class="text-2xl font-bold text-gray-900" id="total-prompts">-</h2>
+                <p class="text-gray-600">Total Prompts</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-green-100 text-green-600">
+                <i class="fas fa-folder text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <h2 class="text-2xl font-bold text-gray-900" id="total-categories">-</h2>
+                <p class="text-gray-600">Categories</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+    <div class="flex flex-wrap gap-4">
+        <a href="/admin/submissions" class="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700">
+            Review Submissions ({{ pending_count }})
+        </a>
+        <a href="/admin/prompts" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            Manage Prompts
+        </a>
+        <a href="/admin/categories" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+            Manage Categories
+        </a>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="bg-white rounded-lg shadow p-6">
+    <h2 class="text-xl font-semibold mb-4">Recent Activity</h2>
+    <p class="text-gray-600">Activity tracking coming soon...</p>
+</div>
+
+<script>
+// Load stats on page load
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/prompts')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-prompts').textContent = data.length || 0;
+        });
+    
+    fetch('/api/categories')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-categories').textContent = data.length || 0;
+        });
+});
+</script>
+{% endblock %}

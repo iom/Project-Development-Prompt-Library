@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Review Queue - Admin{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Review Queue</h1>
+    <p class="text-gray-600 mt-2">Review and approve submitted prompts</p>
+</div>
+
+<div class="space-y-6">
+    {% for submission in submissions %}
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h3 class="text-xl font-semibold text-gray-900">{{ submission.title }}</h3>
+                <p class="text-gray-600 text-sm mt-1">
+                    Submitted {{ submission.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                </p>
+            </div>
+            <div class="flex space-x-2">
+                <button 
+                    onclick="approveSubmission({{ submission.id }})"
+                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                >
+                    Approve
+                </button>
+                <button 
+                    onclick="rejectSubmission({{ submission.id }})"
+                    class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                >
+                    Reject
+                </button>
+            </div>
+        </div>
+
+        <div class="border-t pt-4">
+            <h4 class="font-medium text-gray-900 mb-2">Prompt Text:</h4>
+            <div class="bg-gray-50 p-4 rounded-md mb-4">
+                <pre class="whitespace-pre-wrap text-sm text-gray-800">{{ submission.body }}</pre>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <strong>Category:</strong> {{ submission.category_id }}
+                </div>
+                <div>
+                    <strong>AI Platform:</strong> {{ submission.ai_platform or 'Not specified' }}
+                </div>
+                {% if submission.instructions %}
+                <div class="col-span-2">
+                    <strong>Instructions:</strong> {{ submission.instructions }}
+                </div>
+                {% endif %}
+                {% if submission.tags %}
+                <div class="col-span-2">
+                    <strong>Tags:</strong> {{ submission.tags }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow p-8 text-center">
+        <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">All Caught Up!</h3>
+        <p class="text-gray-600">No pending submissions to review.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+function approveSubmission(submissionId) {
+    if (confirm('Are you sure you want to approve this submission?')) {
+        const formData = new FormData();
+        formData.append('status', 'approved');
+        
+        fetch(`/admin/api/submissions/${submissionId}`, {
+            method: 'PATCH',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Submission approved successfully!');
+            location.reload();
+        })
+        .catch(error => {
+            alert('Error approving submission');
+            console.error(error);
+        });
+    }
+}
+
+function rejectSubmission(submissionId) {
+    const notes = prompt('Reason for rejection (optional):');
+    if (notes !== null) {
+        const formData = new FormData();
+        formData.append('status', 'rejected');
+        formData.append('reviewer_notes', notes || '');
+        
+        fetch(`/admin/api/submissions/${submissionId}`, {
+            method: 'PATCH',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Submission rejected successfully!');
+            location.reload();
+        })
+        .catch(error => {
+            alert('Error rejecting submission');
+            console.error(error);
+        });
+    }
+}
+</script>
+{% endblock %}

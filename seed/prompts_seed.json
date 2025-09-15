@@ -1,0 +1,226 @@
+[
+  {
+    "category": "Research",
+    "subcategory": "",
+    "title": "Discovery Prompt",
+    "body": "I want to explore an idea by identifying the key questions I need to ask in order to thoroughly understand the problem before proposing any solutions. Treat this as a discovery or scoping phase. \n\nFor the idea: [INSERT YOUR IDEA HERE], \n\nPlease help me develop a structured and comprehensive list of discovery questions organized by theme. The goal is to guide interviews, desk research, or market validation work. \n\nFocus areas should include: \n\n1. Current Landscape \n\nHow is this problem currently managed in the real world? \nWhat are the existing tools, systems, or approaches in place? \nWhat are the limitations or constraints of those existing solutions? \nAre there other agencies, organizations, or actors doing similar work? \nWhat internal guidance documents or thematic/geographic intelligence should be considered to inform risks? \n2. Stakeholders & Pain Points \n\nWho are the key stakeholders (e.g., users, implementers, funders)? \nWhat challenges or pain points do each of these groups experience? \nWhat outcomes matter most to each stakeholder group? \n3. Processes & Workflows \n\nWhat does the current process or workflow look like? \nWhere do inefficiencies, friction, or failure points occur? \nAre there gaps or overlaps between actors and systems? \n4. Policies, Standards & Implementation \n\nWhat are the existing policies or regulations on this topic? \nAre these aligned with international standards or norms? \nHow do we verify whether these policies are effectively implemented? \nAre there areas where policy does not match practice? \n5. Scale, Urgency & Impact \n\nHow widespread is the problem? \nWhat’s at stake if the problem remains unsolved? \nWhat is the cost (social, financial, political, operational) of inaction? \nHow urgent is the need for change? \n6. Constraints & Risks \n\nWhat social, political, ethical, or operational constraints must be considered? \nAre there geopolitical, environmental, or cultural factors that shape how interventions work? \nWhat internal risk factors should we be aware of before taking action? \n\nReturn the questions in a structured format I can copy into a Word document or download.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Research",
+    "subcategory": "",
+    "title": "Deep Research Prompt",
+    "body": "I’m conducting a discovery phase to deeply understand a complex problem before designing solutions. I have a file containing a structured list of discovery questions. \n \nFor the idea: [INSERT YOUR IDEA HERE], \n\nYou will be given a word document with a list of questions for my specific idea. Create an Excel with 3 columns. \n\nFor each question create two new columns so that the total list of columns are \n \n•??Column 1: Original question \n•??Column 2: Copilot prompt  \n•??Column 3: ChatGPT/Perplexity research prompt \n\n1. In Column 2, generate a prompt designed for Microsoft Copilot. This prompt should search internal sources such as Outlook emails, SharePoint documents, Teams chat conversations, and OneDrive files to compile all available internal content that can help answer the question in Column A. The Copilot prompt should instruct the tool to collate a detailed summary or document based on all relevant internal materials. \n\n2.??In Column 3, generate a prompt for ChatGPT or Perplexity to conduct deep, public research based on the question in Column A. The prompt should ask the AI to pull from public data sources such as scholarly articles, reputable websites, news archives, and databases to produce a well-structured research paper with references. \nOrganize the information in all three columns by themes.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Research",
+    "subcategory": "",
+    "title": "Executing Research Prompts",
+    "body": "Based on your experience, select and review the prompts from the previous research prompt that make sense and insert them into different AI platforms. Be careful to follow us the prompts in a the right order if necessary.  \n\nExternal Deep Web research (Perplexity, ChatGPT) \nInternal Documents (CoPilot) \n \nInstructions: Collect all your research in one document.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Conceptualization",
+    "subcategory": "",
+    "title": "Project Rationale",
+    "body": "You are an experienced project developer for IOM. Using the information in the document provided [ATTACH RESEARCH], generate a well-structured, evidence-based project rationale that clearly answers the following questions: \n\nWhat is the problem, for whom is it a problem, and why is it significant? \nWhat is the situation to be addressed? \nWhy is the situation a problem? \nIs the problem ongoing, or is it anticipated in the foreseeable future? \nWhere, specifically, is this problem occurring? \nWho is affected by the problem? Break down by gender, age, and other relevant groups (e.g., men, women, boys, girls, marginalized populations). \nWhy is this problem the right one to address now? \nHow will solving the problem benefit the primary target group? \nHow might solving the problem impact other groups (positively or negatively)? Reflect on any unintended consequences. \nUse a formal tone. Ensure the rationale is logically structured, avoids repetition, and aligns with the Project Handbook Standards. Where appropriate, highlight key statistics or research findings from the document to support claims. \n\nOutput the response as a cohesive, single narrative of maximum 400 words, organized in a logical flow that matches the above question structure but reads naturally.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Solutions",
+    "subcategory": "",
+    "title": "Brainstorming Solutions",
+    "body": "Drawing on the attached research paper on [insert problem title] and the donor profile for [Donor Name], design 3-5 context-specific intervention ideas that:\n\n• Directly tackle the core challenges identified in the research.\n• Align with IOM’s Strategic Plan 2024-2028.\n• Are suitable for implementation in [Country/Region] given IOM’s operational capacity.\n\nFor each solution provide\n\nTitle (?12 words)\nSolution Summary (?100 words)\nFull Theory of Change\n? • Inputs ? Activities ? Outputs ? Outcomes ? Impact\nStrategic Alignment (link back to SRF elements already prepared in Prompt A)\n\nDonor Fit Summary\n? • Why it matches the donor’s priorities\n? • Suggested positioning/message for outreach (?60 words)\n\nRanking Justification\n? • Score each solution (High/Medium/Low) for: operational feasibility, IOM experience, strategic positioning.\n? • Short rationale (?40 words).\n\nFormatting\n• Use clear sub-headings for each section.\n• Number the solutions in descending order of recommended priority.\n\nQuality checks\n• If evidence in the research is insufficient, note “Evidence gap – recommend further study.”\n• Avoid jargon; aim for donor-friendly language.\n• Cite specific sections/page numbers from the paper where relevant.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Solutions",
+    "subcategory": "",
+    "title": "Stakeholder Analysis",
+    "body": "Based on the project rationale, research document, the proposed solution and the donor profile [INSERT DOCUMENTS] conduct a stakeholder mapping for a project addressing [INSERT PROBLEM] in [location].  \n\nFor each stakeholder, analyze: \n\nLevel of influence (high/medium/low) \n\nLevel of interest (high/medium/low) \n\nPotential role in the project \n\nPotential concerns or resistance points \n\nEngagement strategy Include government entities, international organizations, \n\nNGOs, civil society, private sector, and affected communities.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Solutions",
+    "subcategory": "",
+    "title": "SRF Linkage Finder",
+    "body": "Using the attached research paper on [insert problem title] and the suggested solutions [solutions document], create a structured SRF-alignment matrix that maps proposed interventions to IOM’s Strategic Results Framework (SRF) (https://srf.iom.int). Consult the SRF cheat-sheet Excel [add Excel from resources section] to identify the 3–5 most relevant SRF entries.\n\nTable with columns:\n? • SRF Strategic Objective Code & Title\n? • SRF Results Area Code & Title\n? • SRF Output Code & Title\n? • Rationale (?25 words)\nNote any SRF gaps—if no perfect match exists, suggest nearest alternative or flag “custom output needed.”\n\nQuality Checks\n• Use exact SRF codes/titles (no paraphrasing).",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Solutions",
+    "subcategory": "",
+    "title": "Theory of Change (SRF Compliant)",
+    "body": "Using the inputs provided below, generate a fully formatted Theory of Change (ToC) that follows the IOM Project Handbook definitions (Objective ? Outcome ? Output ? Activity) and aligns with the IOM Strategic Results Framework (SRF).\n\nInputs (paste each in the indicated section)\n1. Research & Project rationale\n2. Solution concept \n3. SRF Links – Objective code, Result-area code(s), Output code(s).\nDeliverables\n\n1 Objective\nCopy the exact SRF Objective wording; only add geographic or population qualifiers where needed.\n2 Outcomes\nList up to three. Number them “Outcome 1, Outcome 2 …”. Each must:?• start with a change verb (e.g., “Migrants have access to…”)?• cite the corresponding SRF Result-area code in parentheses.\n3 Outputs\nFor every Outcome provide 1–3 Outputs numbered “Output 1.1, 1.2 …; Output 2.1 …”. Each must:?• begin with a deliverable verb (e.g., “Case management services are provided…”)?• quote the exact SRF Output code in parentheses.\n4 Activities\nFor each Output list 2–4 Activities numbered “Activity 1.1.1, 1.1.2 …”. Begin each with a concrete action verb and end with a measurable detail (e.g., “…to 200 migrants”).\n5 Narrative Theory of Change (?300 words)\n• Describe the causal flow from Inputs ? Activities ? Outputs ? Outcomes ? Objective ? Impact, referencing SRF codes where relevant.?• Highlight how donor priorities and evidence underpin key links.\n6 Assumptions & Risks (max 5 bullets)\n\n\nFormatting rules?• Use markdown headings exactly as shown above.?• Preserve the numbering style (Objective ? Outcome 1 ? Output 1.1 ? Activity 1.1.1).?• Keep language donor-friendly; avoid internal jargon.?• If an SRF code seems wrong or missing, flag “(needs SME check)”.\n\nQuality checks (before submitting)?? Each Outcome clearly advances the Objective.?? Every Output feeds into its parent Outcome.?? All SRF codes are accurate and verbatim.?? Activities are feasible for IOM.?? Word/section limits respected.?? Any evidence gap is explicitly flagged.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Donor Profiles",
+    "subcategory": "",
+    "title": "Donor Profile Private Sector",
+    "body": "Objective \nYou are an expert in private sector engagement Create a detailed donor profile for [ INSERT DONOR]  as a potential funder for IOM, tailored for project developers. \n\nKey Entities \nCorporate Structure: Outline the organizational structure of the donor, focusing on departments or teams responsible for philanthropic activities (e.g., CSR, foundation). \nKey Decision-Makers: Identify influential individuals within the organization who play a role in funding decisions. \nPartnerships and Coalitions: Highlight any partnerships or coalitions the donor is part of that could influence their funding priorities. \nFunding Trends \nRecent Contributions: Analyze recent funding contributions by the donor, including amounts and flexibility (e.g., unrestricted vs. project-specific funding). \nInnovative Allocation Models: Discuss any innovative funding models used by the donor, such as impact investing or blended finance. \nCross-Sector Patterns: Examine collaborations between the donor and other sectors or organizations (e.g., partnerships with NGOs or UN agencies). \nThematic Priorities \nCore Focus Areas: Review past funding priorities of the donor, such as education, healthcare, or environmental initiatives. \nEmerging Priorities: Identify any new areas of interest for the donor, such as climate-tech solutions or digital inclusion. \nLinkages to Other UN Agencies: Map connections between the donor and other UN agencies they support (e.g., partnerships with UNDP on youth development programs). \nGeographic Priorities \nSpecific Countries: List countries prioritized by the donor in the past and emerging focus areas based on current strategies. \nRegional Focus via Cross-Thematic Funding: Highlight indirect regional priorities such as Small Island Developing States (SIDS) through climate-related grants. \nDecision-Making \nKey Committees and Processes: Outline the decision-making process within the donor organization for philanthropic funding. \nApproval Criteria: Include factors like alignment with corporate values, scalability potential, or impact on specific SDGs. \nProposal Design \nKeywords to Use \nKeywords to Avoid \n\"Innovative solutions\" \n\"Traditional charity\" \n\"Scalable impact\" \n\"Short-term projects\" \n\"Private sector leverage\" \n\"Government dependency\" \nBudget Ranges: Specify typical funding ranges based on past contributions by the donor. \nScalability Requirements: Emphasize scalable models that align with the donor's growth strategies. \nAlignment Tips: Reference successful examples like partnerships with other private sector entities. \nEngagement Strategy \nDirect Contacts: Identify key personnel in CSR departments or foundation leadership. \nSocial Media Monitoring Tips: Use tools to track company announcements and trends on platforms like LinkedIn and Twitter. \nReporting Expectations: Highlight preferences for transparent reporting formats and measurable outcomes. \nReal-Time Data \nCite recent pledges or announcements from the donor in 2025, press releases, and social media updates to ensure relevance. \nExample \nFor instance, if the donor is a large tech company's philanthropic arm, the profile would focus on their initiatives in digital inclusion, education, and disaster response, highlighting their partnerships with NGOs and UN agencies, and their emphasis on scalable, technology-driven solutions.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Donor Profiles",
+    "subcategory": "",
+    "title": "Traditional Donor Profile (General)",
+    "body": "Donor Profile generator Prompt \n\n\"You are an expert in donor intelligence. Create a comprehensive donor profile for [DONOR] as a potential funder for  IOM, structured for project developers. Include: \n\nKey Entities: Ministries/agencies managing funding, their roles, and coordination bodies. \nFunding Trends: Recent contributions (amounts, flexibility), new allocation models (e.g., softly earmarked), and cross-agency funding patterns (e.g., climate-tech grants via UNEP). \nThematic Priorities: \nCore: Past focus areas (e.g., migration governance). \nEmerging: New priorities from current strategies (e.g., climate-tech, private sector partnerships). \nLink to other UN agencies they fund (e.g., UNDP climate-refugee programs). \nGeographic Priorities: \nList specific countries (past and emerging), with rationale (e.g., drought response in Ethiopia). \nHighlight regions indirectly prioritized via cross-thematic funding (e.g., SIDS via climate grants). \nDecision-Making: Key committees, approval steps, and criteria (e.g., carbon reduction plans). \nProposal Design: \nKeywords to use/avoid (table format). \nBudget ranges, scalability requirements, and alignment tips (e.g., Danida Green Business Partnerships). \nEngagement Strategy: Direct contacts, social media monitoring tips, and reporting expectations. \nReal-Time Data: Cite recent pledges (2025), ministry communications, and social media updates. \nFormat: Use headers, tables, and bullet points. Avoid jargon; focus on actionable insights for project developers.\"**",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Donor Profiles",
+    "subcategory": "",
+    "title": "Traditional Donor Profile (IOM)",
+    "body": "You are an expert in donor intelligence, specialized in development and humanitarian funding. Create a concise, high-utility donor profile for [DONOR] as a potential funder for the International Organization for Migration (IOM). Prioritize relevance to IOM’s strategic objectives, operational contexts, and funding modalities. Avoid generic or irrelevant content. Focus on actionable, verified, 2024–2025 information.\n\n1. Key Entities\nList key ministries, agencies, or public institutions managing development/humanitarian funding.\nDefine their roles (policy, implementation, coordination).\nIdentify any inter-agency coordination mechanisms relevant to IOM sectors.\n2. Funding Trends\nList recent contributions to IOM or similar UN agencies (include amounts, years).\nDescribe flexibility: core, softly earmarked, tightly earmarked.\nHighlight funding mechanisms (e.g. pooled funds, cross-agency initiatives like UNEP-administered climate grants).\nNote shifts in donor strategy (e.g., green transitions, digital solutions, blended finance).\n3. Thematic Priorities\nCore Priorities: Longstanding focus areas relevant to IOM (e.g., migration governance, displacement response).\nEmerging Priorities: New themes relevant to IOM (e.g., climate mobility, digital identity, private sector engagement).\nMention other UN agencies the donor funds that overlap with IOM’s work (e.g., UNHCR, UNDP).\n4. Geographic Priorities\nList key countries or regions where the donor has historically focused, with rationale (e.g., conflict zones, migration corridors).\nIdentify emerging geographies (e.g., SIDS via climate resilience grants).\nNote relevance to IOM regional strategies or active operations.\n5. Decision-Making\nIdentify key funding decision-makers (ministries, review boards, parliamentary committees).\nDescribe the approval process (e.g., calls for proposals, bilateral negotiations).\nList key eligibility or evaluation criteria (e.g., gender lens, climate resilience, carbon reduction plans).\n6. Proposal Design\nKeywords to Use: (e.g., resilience, co-creation, green innovation, digital inclusion)\nKeywords to Avoid: (e.g., generic terms like “support”, “development work”)\nTypical budget ranges (e.g., USD 250k–2M).\nIndicate scalability, co-financing, or pilot requirements.\nProvide alignment advice (e.g., refer to Danida Green Business Partnerships for private-sector relevant language).\n7. Engagement Strategy\nList known direct contacts or access points (e.g., donor portals, embassies, LinkedIn).\nRecommend monitoring channels (e.g., Twitter accounts of key ministries, newsletters, donor blogs).\nDescribe expected reporting formats and frequency (e.g., quarterly reports, logframes, outcome indicators).\n8. Real-Time Data\nCite any recent 2025 pledges or funding announcements.\nReference updated donor strategies or white papers.\nUse only verified and official sources (e.g., ministry sites, UN funding dashboards).",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Donor Profiles",
+    "subcategory": "",
+    "title": "Short Donor Profile (IOM)",
+    "body": "You are an expert in donor intelligence with a focus on humanitarian and development funding. Create a brief, actionable donor profile for [DONOR] as a potential funder for the International Organization for Migration (IOM).\n\nKeep the profile concise (max 1 page) and focused on information that is directly relevant to IOM’s mandate and operations. Prioritize accuracy, clarity, and strategic relevance over volume.\nInclude only the following sections:\nOverview\nName of key funding agency or ministry.\nMain thematic and geographic focus relevant to IOM.\nThematic Priorities\n2–3 top funding areas aligned with IOM’s work (e.g., migration, climate displacement).\nAny emerging interests (e.g., digital mobility, private sector partnerships).\nGeographic Focus\nKey countries or regions funded (especially where IOM is active).\nAny shifts or expansions in geographic interest (e.g., new climate focus in Sahel/SIDS).\nFunding Modality & Trends\nRecent funding examples (to IOM or related UN agencies).\nNotes on flexibility (core/earmarked) and typical funding size.\nEngagement Pointers\nEntry points (e.g., donor portal, embassy, LinkedIn lead).\nMonitoring tip (e.g., key ministry’s press section or Twitter).\nReporting expectations if known (frequency, indicators, etc.).\nInstructions to AI:\nMaximize relevance to IOM’s strategic and operational context.\nUse bullet points for clarity.\nAvoid generic statements or unrelated funding themes.\nCite sources only if directly relevant and recent (2024–2025).",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Donor Profiles",
+    "subcategory": "",
+    "title": "Deep Donor Scoping",
+    "body": "Donor Scoping Prompt \nYou are a donor intelligence analyst with deep expertise in humanitarian, development, and climate financing. Conduct a targeted deep-dive to identify 5 high-potential donors for a proposed IOM project.\n\nInsert [Project idea] \n* Project Theme(s): [e.g., Climate-induced displacement]\n* Target Geography: [e.g., MENA, South Asia, Malawi]\n* IOM Objective Link: [e.g., aligns with SRF, Objective 2 of IOM Strategic Plan]\n\nTask:?Identify the most relevant bilateral, multilateral, or philanthropic donors based on the above inputs. Structure your findings to support immediate follow-up by IOM’s project developers and resource mobilization staff.\n\nFor each potential donor, include the following (max 1–2 short paragraphs per donor):\n1. Donor Name & Entity\n* Lead ministry or agency (e.g., GIZ under BMZ, Sida under MFA Sweden)\n2. Why this donor?\n* Thematic alignment (e.g., donor supports climate-migration nexus)\n* Geographic relevance (e.g., currently funding resilience in [target region])\n* Connection to IOM or related UN work (e.g., funds UNDP climate mobility)\n3. Funding Modality\n* Known mechanisms used (e.g., bilateral calls, trust funds, core contributions)\n* Budget ranges or flexibility if available (e.g., USD 500k–2M, softly earmarked)\n4. Recent Activity (2024–2025)\n* Pledges, published calls, or strategic papers that signal interest\n* Verified source links or summaries of relevant communications\n5. Engagement Tips\n* Entry point suggestions (e.g., donor platform, embassy, LinkedIn lead)\n* Monitoring methods (e.g., track ministry briefings, donor dashboard)\n\nInstructions to AI:\n* Prioritize thematic and geographic fit over donor size.\n* Only include donors that are credible prospects for IOM.\n* Use recent, verifiable data only (2024–2025).\n* Present results in clear, actionable language.\n* Avoid duplicating content from irrelevant sectors (e.g., education-only donors).\n* Include links to primary sources when available (e.g., strategy documents, funding portals).",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Cross-cutting themes",
+    "subcategory": "",
+    "title": "Rights-based approach",
+    "body": "Read the project proposal attached [insert project proposal draft] and list suggestions that would bring it closer to IOM’s Rights-Based Approach to Programming manual (https://publications.iom.int/books/rights-based-approach-programming).\n\nDeliverable format\n• Bullet list, one bullet per tweak, ?25 words each.\n• Start each bullet with an action verb (e.g., “Add…”, “Include…”).\n• In parentheses, mention which RBA principle it strengthens: (Legality / Participation / Non-discrimination / Accountability / Empowerment).\n• If a key element is missing, flag “Critical gap – add”.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Cross-cutting themes",
+    "subcategory": "",
+    "title": "Gender-mainstreaming",
+    "body": "Review the project proposal attached [attach proposal draft] and recommend suggestions on gender-mainstreaming the proposal against the five checks listed in Reference Points.\n\nReference Points\n1. Addressing different needs of women, men, girls, boys, non-binary people\n2. Ensuring equal participation in activities & decision-making\n3. Collecting and using gender-disaggregated data\n4. Tackling gender-specific barriers and risks\n5. Promoting gender equality through outcomes\n\nIf a key element is missing, flag “Critical gap – add”.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Cross-cutting themes",
+    "subcategory": "",
+    "title": "Environmental Sustainability",
+    "body": "Review the project proposal attached [attach proposal draft] and recommend suggestions to strengthen environmental sustainability against the five checks listed in Reference Points.\n\nReference Points\n1. Identifying potential environmental impacts (positive & negative)\n2. Recommending mitigation measures for negative impacts\n3. Suggesting ways to promote positive environmental outcomes\n4. Incorporating climate-change considerations (adaptation & mitigation)\n5. Proposing environmentally sustainable practices in implementation\n\n\nIf a key element is missing, flag “Critical gap – add”.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Cross-cutting themes",
+    "subcategory": "",
+    "title": "Sustainability of Project Results",
+    "body": "Review the project proposal attached [attach proposal draft] and recommend suggestions to strengthen sustainability of results against the five checks in Reference Points.\nReference Points\n\n1. Financial & Economic – resources/funding past project end\n2. Institutional & Policy – capacities, procedures, legal uptake\n3. Ownership & Social – community/stakeholder buy-in\n4. Environmental & Risk – long-term ecological/social impacts\n5. Exit & Handover – clear plan for transfer, monitoring, scaling\n\nIf a key element is missing, flag “Critical gap – add”.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Cross-cutting themes",
+    "subcategory": "",
+    "title": "Principled Humanitarian Action (PHA)",
+    "body": "Review the project proposal attached [attach proposal draft] and recommend suggestions to align with Principled Humanitarian Action (PHA)using the five checks in Reference Points.\n\nReference Points\n1. Humanity – alleviating suffering, dignity, life-saving priority\n2. Impartiality – assistance based on need alone, no discrimination\n3. Neutrality – not taking sides in hostilities or controversies\n4. Independence – autonomy from political, economic, military aims\n5. Do No Harm & AAP – conflict sensitivity, Accountability to Affected Populations\n\nIf a key element is missing, flag “Critical gap – add”.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Cross-cutting themes",
+    "subcategory": "",
+    "title": "Mainstream Protection",
+    "body": "Review the project proposal attached [attach proposal draft] and recommend suggestions to mainstream protection against the five checks in Reference Points.\n\nReference Points\n1. Risk Analysis – identifies protection threats & vulnerable groups\n2. Safe, Dignified Access – no barriers, confidentiality, GBV safety\n3. Prevention & Response Actions – clear activities/referral pathways\n4. Participation & Accountability – affected people influence, feedback\n5. Legal & Coordination Links – aligns with law, works with protection actors\n\nIf a key element is missing, flag “Critical gap – add”.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Risk Assessment",
+    "subcategory": "",
+    "title": "Risk Identification",
+    "body": "Review the project proposal attached [attach proposal draft] and list key risks under the six categories in Reference Columns.\n\nReference \nOperational; supply chain, staffing, tech failure\nFinancial; funding gap, FX swing, fraud\nPolitical / Security: \tinstability, policy change, conflict\nEnvironmental:\tfloods, heatwaves, resource depletion\nSocial: community resistance, cultural barriers\nReputational: media backlash, stakeholder perception\n\nDeliverable format?Produce a table with five columns:\n\n1. Risk ID & Description (? 25 words)\n2. Category\n3. Likelihood (High / Medium / Low)\n4. Impact (High / Medium / Low)\n5. Critical? (Yes if H-H combo, else No)\n\n• List 5-10 risks maximum.?• No narrative beyond the table.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Risk Assessment",
+    "subcategory": "",
+    "title": "Risk Mitigation & Contingency Plan",
+    "body": "[Copy Risks from previous prompt] Using the risks table above, create mitigation plans that:?• Tackle root causes, reduce likelihood, and prepare contingencies.?• Name who monitors each risk and note resource needs.\nDeliverable format?Provide a table with six columns:\n1. Risk ID (copy exact wording)\n2. Mitigation / Preventive Action (? 25 words)\n3. Contingency Plan (? 25 words)\n4. Responsible Party (role or unit)\n5. Resources / Budget Implication (Low / Med / High)\n6. Residual Risk (High / Medium / Low)\nFocus on action verbs (“Diversify…”, “Pre-position…”).\n• Flag Residual Risk High if even after measures danger remains.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Risk Assessment",
+    "subcategory": "",
+    "title": "Critical Assumptions",
+    "body": "Review the project proposal attached [attach proposal draft] and identify assumptions that must hold but are outside project control.\nDeliverable format?\nProduce a table with five columns:\n1. Assumption (? 25 words)\n2. Why Critical (short causal link to outcome)\n3. Plausibility (High / Medium / Low)\n4. Monitoring Indicator (what, how often)\n5. Contingency if Fails (? 25 words)\n\n• List 3-7 critical assumptions.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Private Sector Engagement",
+    "subcategory": "",
+    "title": "Country-Level Private Sector Mapping",
+    "body": "You are a private sector partnership analyst supporting IOM. Based on IOM’s private sector mapping guidance and using public sources only, identify and profile private sector actors in [Country/Region] that may be interested in supporting IOM’s work.\nFocus on actors from the following categories:\n* Multinational and national corporations (by sector)\n* Corporate or family foundations\n* Social enterprises and impact investors\n* Diaspora associations and high-net-worth individuals (HNWIs)\n* Business/professional/employer associations\n* Large faith-based organizations\nFor each actor, include:\n* Name\n* Type of actor (e.g. corporation, foundation, diaspora group)\n* Sector or industry focus\n* CSR/ESG priorities (from sustainability reports, public campaigns, websites)\n* Likely type of contribution (cash, in-kind, fee-for-service, pro bono, etc.)\n* Relevance to IOM (e.g., past support to migration, displacement, health, climate, skills, or employment)\n* Source (website, LinkedIn, news article, etc.)\nCategorize the actors into three tiers:\n* Tier 1: High potential (strong thematic alignment + giving history)\n* Tier 2: Emerging prospects (some CSR potential but no track record)\n* Tier 3: Monitor list (relevance possible in future)\nFormat results in a clean, structured list or table. Limit to a maximum of 10–15 actors to keep it focused.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Private Sector Engagement",
+    "subcategory": "",
+    "title": "Strategic Match & Contribution Potential",
+    "body": "Using the private sector actor list from the previous promt [Country Strategy], analyze and match each actor to the IOM Strategic Objectives they are most likely to support.\nIOM Strategic Objectives:\n1. Saving lives and protecting people on the move\n2. Driving solutions to displacement\n3. Facilitating pathways for regular migration\nFor each actor, complete the following analysis:\n* Strategic Objective(s) alignment (1, 2, and/or 3)\n* Reason for alignment (e.g., ESG goals on climate adaptation align with Objective 2)\n* Likely form of contribution (cash, in-kind, technical expertise, infrastructure, etc.)\n* Notes on past initiatives or campaigns that support this alignment\nOutput format suggestion: Table with columns:?| Actor Name | Type | Strategic Objective(s) | Likely Contribution | Justification | Source",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Private Sector Engagement",
+    "subcategory": "",
+    "title": "Country-Level Engagement Strategy",
+    "body": "You are supporting the development of IOM [Country]’s private sector engagement strategy. Using the private sector mapping from the previous promt [Country Strategy] and IOM’s Strategic Plan 2024–2028, draft a concise engagement strategy (2–3 pages max) tailored to the national context.\n\nThe strategy should include:\n1. Context – Brief overview of the private sector landscape in [Country]\n2. Objectives – What IOM aims to achieve through private sector engagement\n3. Target Sectors and Actor Types – Based on mapping results (e.g., tech, logistics, agri-business)\n4. Partnership Modalities – Types of engagement sought (e.g., cash, in-kind, innovation, fee-for-service)\n5. Engagement Approach – Tactics for reaching out, building trust, and initiating collaboration\n6. Risk Management – Due diligence considerations and reputational safeguards\n7. Monitoring and Next Steps – How engagement efforts will be tracked and scaled\n\nStyle: Clear, practical, donor- and mission-facing.",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Private Sector Engagement",
+    "subcategory": "",
+    "title": "Tailored Pitches",
+    "body": "[Attach Country Strategy] You are preparing outreach materials for private sector actors mapped in [Country]. For the Tier 1 actors, write tailored engagement pitches, drawing on their CSR/ESG goals and aligning with IOM’s objectives.\nFor each actor, include:\n* A short introduction to IOM’s work in [Country or Thematic Area]\n* Summary of the partner’s known CSR/ESG focus areas\n* A customized pitch (2–3 sentences) on how they could support IOM (e.g., funding a climate-resilience initiative, providing IT equipment, or co-developing a skills program)\n* Suggested next step (e.g., email, meeting proposal, co-design workshop)\nOptionally: Draft a follow-up email introducing IOM, summarizing the value proposition, and proposing a meeting.\nTone: Friendly, concise, impact-driven, and aligned with the partner’s language and",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Private Sector Engagement",
+    "subcategory": "",
+    "title": "Donor-Facing Brief or Concept Note",
+    "body": "You are supporting IOM in preparing a donor-facing document or pitch deck tailored to a specific sector or thematic area in [INSERT COUNTRY], intended to introduce IOM’s work and invite strategic collaboration from [INSERT DONOR NAME / PRIVATE SECTOR ACTOR].\nThe donor’s strategic priorities include [INSERT DONOR FOCUS—e.g., innovation, climate adaptation, digital inclusion, local economic development, systems strengthening].\nUsing the attached and/or summarized materials [UPLOAD or PASTE e.g., project summaries, strategy papers, evaluations, reports, etc.], generate a clear, concise, persuasive donor-facing document or presentation.\nThe final output should be structured as follows (please adapt section headings and tone to match donor type and project scope):\n\nStructure for the Donor Brief or Pitch Document:\n1. Overview\n    * A brief introduction to IOM’s work in [SECTOR] in [COUNTRY]\n    * Why this work matters now: relevance to local context and donor priorities\n    * Alignment with the donor's thematic or geographic focus\n2. Where We Work & Who We Serve\n    * Geographic reach (regions, municipalities, etc.)\n    * Target groups (e.g., migrants, displaced populations, youth, host communities, returnees)\n3. How We Work\n    * IOM’s approach in this sector: key methods, tools, and principles\n    * Examples: community engagement, cross-sectoral integration, sustainability, innovation, partnerships\n    * Any coordination with national/local authorities or other UN actors\n4. Key Achievements\n    * Highlight 2–3 concrete accomplishments (include location, dates, impact figures or success indicators if available)\n    * Showcase notable innovations or pilot results if relevant\n    * Do not fabricate numbers — use placeholders if data is not yet confirmed\n5. Innovation, Resilience & Learning\n    * Examples of adaptive solutions, digital tools, or co-creation efforts\n    * What IOM has learned from implementation — and how it's being applied\n    * Relevant case studies or learning loops that align with donor’s values\n6. Opportunities for Collaboration\n    * Propose 3–5 tailored opportunities that align IOM’s work with the donor’s priorities\n    * Keep each one short, specific, and solution-oriented (e.g., “Support scale-up of solar-powered shelters in climate-displaced communities in northern Mozambique”)\n    * Suggest type of collaboration: funding, in-kind, innovation partnership, fee-for-service, etc.\n7. Additional Resources (Optional)\n    * List any strategy documents, success stories, project dashboards, or evaluations the donor can request for more information\n8. Contact Information\n    * Include name, title, and email address of relevant IOM focal point\n\n Additional Instructions for AI:\n* Tone: Professional, positive, and impact-driven\n* Use bullet points and headers to improve scannability\n* Only include factual content; flag unknown data with placeholders\n* Align the language with the donor’s values (e.g., innovation, resilience, ESG)\n* Output should be ready for copy-paste into Word or Google Docs for formatting\n* You may also convert the result into a PowerPoint-friendly format if specified",
+    "tags": [],
+    "status": "published"
+  },
+  {
+    "category": "Private Sector Engagement",
+    "subcategory": "",
+    "title": "CRM Entry & DD Level 1",
+    "body": "You are preparing a new entry for IOM’s Wave CRM system and supporting a Level 1 Due Diligence request for [Partner Name].\nPlease use public sources such as the organization’s website, annual reports, press releases, sustainability reports, and trusted directories. Make sure all entries are factual and source-based.\n\nComplete the following CRM Fields:\n1. Description?Write a concise third-person overview of the partner. Include:\n* What the organization does (sector/mission)\n* Where it is headquartered\n* Its purpose/vision (if publicly stated)\nAdd this under: Description\n2. Contact Information?Provide:\n* Headquarters address\n* General phone number (if available)\n* General/public email\nAdd this under: Contact Information\n3. Presence?List countries or regions where the partner operates, especially where it overlaps with IOM operations.\nAdd this under: Presence\n4. ESG/CSR Strategy?Summarize the partner’s key environmental, social, or governance (ESG) or corporate social responsibility (CSR/CSI) commitments. Use their sustainability reports or official websites.\n* Mention specific focus areas (e.g., climate resilience, gender equity, youth employment, disaster response)\n* Provide 1–2 illustrative examples of public programs or goals\nAdd this under: ESG/CSR Strategy\n5. Charitable Giving Examples?List specific examples (with links, if available) of charitable contributions, partnerships, or donations made by the organization.\n* Prioritize examples related to humanitarian, development, climate, or migration causes\nAdd this under: Charitable Giving Examples\n6. Partnership Summary?Answer the following:\n* What is the vision for the partnership?\n* What are the key areas the partnership would be built around (e.g., migration health, employment, climate adaptation, digital ID)?\n* What steps would be needed to advance engagement (e.g., meeting, co-design workshop, concept note)??Base your response on:\n* IOM’s current or planned areas of work in [Country/Region]\n* The partner’s priorities and operations\nRevise for clarity and add under: Partnership Summary\n\nDue Diligence Level 1 (Internal Review Only)\n1. Risk Commentary (for internal notes – not stored in CRM field):\n* Assess whether partnering with this entity presents a Low, Medium, High, or Very High risk (reputation, ethical, legal)\n* Justify the assessment using:\n    * Public controversies\n    * Links to violations or litigation\n    * Rankings in ESG databases (e.g., UNGC, Sustainalytics, etc.)\n    * Industry involvement (e.g., tobacco, arms, extractives)\nAdd this in the Comments section of the DD-request (do not include the risk level, but keep the rationale for your own reference)\n2. Sector Involvement & Sensitive Sector Check:\n* Select sectors the partner is involved in (tick box)\n* Indicate if they are directly or indirectly involved in any sensitive sector (e.g., mining, defense, fossil fuels)\nRequired for DD request submission\n3. Controversy Summary (if applicable):\n* Paste any text from news sources or ESG reports describing a relevant controversy\nAdd this under: Potential Concerns in the DD-request\n\nFinal Notes\n* All entries must be traceable to public sources (include URLs where applicable)\n* Ensure formatting is copy-paste friendly for CRM input\n* Keep tone factual, neutral, and structured for internal documentation",
+    "tags": [],
+    "status": "published"
+  }
+]

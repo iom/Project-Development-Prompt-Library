@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex gap-8">
+    <!-- Sidebar for categories -->
+    <div class="w-1/4">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Categories</h3>
+            <div id="categories" hx-get="/api/categories" hx-trigger="load">
+                Loading categories...
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="flex-1">
+        <!-- Search bar -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <div class="flex gap-4">
+                <input 
+                    type="text" 
+                    id="searchQuery"
+                    placeholder="Search prompts..." 
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                <select id="platformFilter" class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">All Platforms</option>
+                    <option value="ChatGPT">ChatGPT</option>
+                    <option value="Claude">Claude</option>
+                    <option value="Midjourney">Midjourney</option>
+                </select>
+                <button 
+                    onclick="searchPrompts()" 
+                    class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+                >
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Prompts list -->
+        <div id="promptsList" hx-get="/api/prompts" hx-trigger="load">
+            Loading prompts...
+        </div>
+    </div>
+</div>
+
+<script>
+function searchPrompts() {
+    const query = document.getElementById('searchQuery').value;
+    const platform = document.getElementById('platformFilter').value;
+    const params = new URLSearchParams();
+    if (query) params.append('query', query);
+    if (platform) params.append('platform', platform);
+    
+    htmx.ajax('GET', `/api/prompts?${params.toString()}`, {target: '#promptsList'});
+}
+
+// Handle category selection
+function selectCategory(categoryId) {
+    const query = document.getElementById('searchQuery').value;
+    const platform = document.getElementById('platformFilter').value;
+    const params = new URLSearchParams();
+    if (query) params.append('query', query);
+    if (platform) params.append('platform', platform);
+    if (categoryId) params.append('category', categoryId);
+    
+    htmx.ajax('GET', `/api/prompts?${params.toString()}`, {target: '#promptsList'});
+}
+</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+<div class="space-y-2">
+    <button onclick="selectCategory('')" class="block w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm">
+        All Categories
+    </button>
+    {% for category in categories %}
+    <button onclick="selectCategory({{ category.id }})" class="block w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm">
+        {{ category.name }}
+    </button>
+    {% endfor %}
+</div>

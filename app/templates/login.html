@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Login - IOM Prompt Library{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+    <div class="bg-white rounded-lg shadow p-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">Admin Login</h1>
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800">
+                        Temporary Authentication
+                    </h3>
+                    <div class="mt-2 text-sm text-yellow-700">
+                        <p>Authentication is currently using a temporary system. Contact your administrator for the admin key and use browser developer tools to add the header <strong>X-Admin-Key: [key]</strong> to access admin features.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <p class="text-gray-600 mb-4">Replit Auth integration coming soon...</p>
+            <a href="/" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Library
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

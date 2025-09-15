@@ -1,0 +1,51 @@
+<div class="space-y-4">
+    <div class="text-sm text-gray-600 mb-4">
+        Found {{ total }} prompts
+    </div>
+    
+    {% for prompt in items %}
+    <div class="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+        <div class="flex justify-between items-start mb-3">
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">
+                    <a href="/prompt/{{ prompt.id }}" class="hover:text-blue-600">{{ prompt.title }}</a>
+                </h3>
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <span class="inline-flex items-center">
+                        <i class="fas fa-folder mr-1"></i>
+                        {{ categories.get(prompt.category_id, 'Unknown') }}
+                    </span>
+                    {% if prompt.ai_platform %}
+                    <span class="inline-flex items-center">
+                        <i class="fas fa-robot mr-1"></i>
+                        {{ prompt.ai_platform }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <button onclick="copyPrompt('{{ prompt.id }}')" 
+                    class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                Copy
+            </button>
+        </div>
+        <p class="text-gray-700 text-sm leading-relaxed">
+            {% if prompt.body|length > 200 %}
+                {{ prompt.body[:200] }}...
+            {% else %}
+                {{ prompt.body }}
+            {% endif %}
+        </p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if total > page_size %}
+<div class="flex justify-center mt-6 space-x-2">
+    {% set total_pages = (total + page_size - 1) // page_size %}
+    {% for p in range(1, [total_pages + 1, 6]|min) %}
+    <button onclick="loadPage({{ p }})" class="{% if p == page %}bg-blue-600 text-white{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %} px-3 py-2 rounded-md border text-sm">
+        {{ p }}
+    </button>
+    {% endfor %}
+</div>
+{% endif %}

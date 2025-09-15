@@ -10,10 +10,19 @@ import json
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
 
-# TODO: Add admin authentication middleware
+# Temporary admin authentication (to be replaced with Replit Auth)
+def admin_required(request: Request):
+    """Temporary admin check - replace with proper auth later"""
+    import os
+    # Use environment variable for admin key (better than hardcoded)
+    required_key = os.getenv("ADMIN_KEY", "change-me-in-production")
+    admin_key = request.headers.get("X-Admin-Key")
+    if admin_key != required_key:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return {"admin": True}
 
 @router.get("/api/submissions")
-def list_submissions(session: SessionDep, status: str = "pending"):
+def list_submissions(session: SessionDep, status: str = "pending", admin=Depends(admin_required)):
     """List prompt submissions for review"""
     submissions = session.exec(
         select(PromptSubmission).where(PromptSubmission.status == status)
@@ -25,7 +34,8 @@ def review_submission(
     submission_id: int,
     session: SessionDep,
     status: str = Form(...),  # 'approved' or 'rejected'
-    reviewer_notes: str = Form("")
+    reviewer_notes: str = Form(""),
+    admin=Depends(admin_required)
 ):
     """Approve or reject a submission"""
     submission = session.get(PromptSubmission, submission_id)
@@ -64,7 +74,7 @@ def review_submission(
     return {"message": f"Submission {status} successfully"}
 
 @router.get("/api/prompts")
-def list_admin_prompts(session: SessionDep):
+def list_admin_prompts(session: SessionDep, admin=Depends(admin_required)):
     """List all prompts for admin management"""
     prompts = session.exec(select(Prompt)).all()
     return prompts
@@ -73,6 +83,7 @@ def list_admin_prompts(session: SessionDep):
 def update_prompt(
     prompt_id: int,
     session: SessionDep,
+    admin=Depends(admin_required),
     title: str = Form(None),
     body: str = Form(None),
     status: str = Form(None),
@@ -111,7 +122,7 @@ def update_prompt(
     return {"message": "Prompt updated successfully"}
 
 @router.delete("/api/prompts/{prompt_id}")
-def delete_prompt(prompt_id: int, session: SessionDep):
+def delete_prompt(prompt_id: int, session: SessionDep, admin=Depends(admin_required)):
     """Soft delete (archive) a prompt"""
     prompt = session.get(Prompt, prompt_id)
     if not prompt:
@@ -127,6 +138,7 @@ def delete_prompt(prompt_id: int, session: SessionDep):
 @router.post("/api/categories")
 def create_category(
     session: SessionDep,
+    admin=Depends(admin_required),
     name: str = Form(...),
     description: str = Form(""),
     parent_id: int = Form(None)
@@ -146,7 +158,7 @@ def create_category(
     return {"message": "Category created successfully", "id": category.id}
 
 @router.get("/dashboard", response_class=HTMLResponse)
-async def admin_dashboard(request: Request, session: SessionDep):
+async def admin_dashboard(request: Request, session: SessionDep, admin=Depends(admin_required)):
     """Admin dashboard"""
     pending_submissions = session.exec(
         select(PromptSubmission).where(PromptSubmission.status == "pending")
@@ -161,7 +173,7 @@ async def admin_dashboard(request: Request, session: SessionDep):
     )
 
 @router.get("/submissions", response_class=HTMLResponse)
-async def admin_submissions(request: Request, session: SessionDep):
+async def admin_submissions(request: Request, session: SessionDep, admin=Depends(admin_required)):
     """Admin submissions management"""
     submissions = session.exec(
         select(PromptSubmission).where(PromptSubmission.status == "pending")

@@ -23,12 +23,6 @@
                     placeholder="Search prompts..." 
                     class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                <select id="platformFilter" class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">All Platforms</option>
-                    <option value="ChatGPT">ChatGPT</option>
-                    <option value="Claude">Claude</option>
-                    <option value="Midjourney">Midjourney</option>
-                </select>
                 <button 
                     onclick="searchPrompts()" 
                     class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
@@ -48,10 +42,8 @@
 <script>
 function searchPrompts() {
     const query = document.getElementById('searchQuery').value;
-    const platform = document.getElementById('platformFilter').value;
     const params = new URLSearchParams();
     if (query) params.append('query', query);
-    if (platform) params.append('platform', platform);
     
     htmx.ajax('GET', `/htmx/prompts?${params.toString()}`, {target: '#promptsList'});
 }
@@ -59,10 +51,8 @@ function searchPrompts() {
 // Handle category selection
 function selectCategory(categoryId) {
     const query = document.getElementById('searchQuery').value;
-    const platform = document.getElementById('platformFilter').value;
     const params = new URLSearchParams();
     if (query) params.append('query', query);
-    if (platform) params.append('platform', platform);
     if (categoryId) params.append('category', categoryId);
     
     htmx.ajax('GET', `/htmx/prompts?${params.toString()}`, {target: '#promptsList'});

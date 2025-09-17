@@ -78,12 +78,13 @@ def review_submission(
             body=submission.body,
             category_id=submission.category_id,
             subcategory_id=submission.subcategory_id,
-            ai_platform=submission.ai_platform,
             instructions=submission.instructions,
             tags=submission.tags,
             status="published",
             created_by=submission.submitted_by
         )
+        # Set platforms from submission
+        prompt.set_platforms(submission.get_platforms())
         session.add(prompt)
         session.commit()
         session.refresh(prompt)
@@ -106,7 +107,7 @@ def update_prompt(
     status: str = Form(None),
     category_id: int = Form(None),
     subcategory_id: int = Form(None),
-    ai_platform: str = Form(None),
+    ai_platforms: str = Form(None),
     instructions: str = Form(None),
     tags: str = Form(None)
 ):
@@ -125,8 +126,18 @@ def update_prompt(
         prompt.category_id = category_id
     if subcategory_id is not None:
         prompt.subcategory_id = subcategory_id
-    if ai_platform is not None:
-        prompt.ai_platform = ai_platform
+    if ai_platforms is not None:
+        # Parse comma-separated platforms or JSON
+        try:
+            if ai_platforms.startswith('['):
+                platforms = json.loads(ai_platforms)
+            else:
+                platforms = [p.strip() for p in ai_platforms.split(',') if p.strip()]
+            prompt.set_platforms(platforms)
+        except (json.JSONDecodeError, AttributeError):
+            # Fallback to single platform
+            if ai_platforms:
+                prompt.set_platforms([ai_platforms])
     if instructions is not None:
         prompt.instructions = instructions
     if tags is not None:
@@ -300,7 +311,7 @@ async def admin_create_prompt(
     title: str = Form(...),
     body: str = Form(...),
     category_id: int = Form(...),
-    ai_platform: str = Form(""),
+    ai_platforms: str = Form(""),
     instructions: str = Form(""),
     tags: str = Form(""),
     status: str = Form("published")
@@ -310,12 +321,23 @@ async def admin_create_prompt(
         title=title,
         body=body,
         category_id=category_id,
-        ai_platform=ai_platform if ai_platform else None,
         instructions=instructions if instructions else None,
         tags=tags if tags else None,
         status=status,
         created_by=None  # Admin created
     )
+    
+    # Set platforms
+    if ai_platforms:
+        try:
+            if ai_platforms.startswith('['):
+                platforms = json.loads(ai_platforms)
+            else:
+                platforms = [p.strip() for p in ai_platforms.split(',') if p.strip()]
+            prompt.set_platforms(platforms)
+        except (json.JSONDecodeError, AttributeError):
+            if ai_platforms:
+                prompt.set_platforms([ai_platforms])
     
     session.add(prompt)
     session.commit()
@@ -349,7 +371,7 @@ async def admin_update_prompt_form(
     title: str = Form(...),
     body: str = Form(...),
     category_id: int = Form(...),
-    ai_platform: str = Form(""),
+    ai_platforms: str = Form(""),
     instructions: str = Form(""),
     tags: str = Form(""),
     status: str = Form("published")
@@ -362,11 +384,24 @@ async def admin_update_prompt_form(
     prompt.title = title
     prompt.body = body
     prompt.category_id = category_id
-    prompt.ai_platform = ai_platform if ai_platform else None
     prompt.instructions = instructions if instructions else None
     prompt.tags = tags if tags else None
     prompt.status = status
     prompt.updated_at = datetime.utcnow()
+    
+    # Set platforms
+    if ai_platforms:
+        try:
+            if ai_platforms.startswith('['):
+                platforms = json.loads(ai_platforms)
+            else:
+                platforms = [p.strip() for p in ai_platforms.split(',') if p.strip()]
+            prompt.set_platforms(platforms)
+        except (json.JSONDecodeError, AttributeError):
+            if ai_platforms:
+                prompt.set_platforms([ai_platforms])
+    else:
+        prompt.set_platforms([])
     
     session.add(prompt)
     session.commit()

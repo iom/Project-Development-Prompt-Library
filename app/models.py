@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from sqlmodel import SQLModel, Field
 from datetime import datetime
 import json
@@ -26,7 +26,7 @@ class Prompt(SQLModel, table=True):
     body: str
     category_id: int = Field(foreign_key="category.id")
     subcategory_id: Optional[int] = Field(default=None, foreign_key="category.id")
-    ai_platform: Optional[str] = None
+    ai_platforms: Optional[str] = None  # JSON string storing list of platforms
     instructions: Optional[str] = None
     tags: Optional[str] = None  # JSON string for simplicity in v1
     status: str = Field(default="published")  # 'draft' | 'published' | 'archived'
@@ -34,13 +34,37 @@ class Prompt(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+    def get_platforms(self) -> List[str]:
+        """Get list of AI platforms from JSON string"""
+        if not self.ai_platforms:
+            return []
+        try:
+            return json.loads(self.ai_platforms)
+        except (json.JSONDecodeError, TypeError):
+            # Handle legacy single platform or malformed data
+            return [self.ai_platforms] if self.ai_platforms else []
+    
+    def set_platforms(self, platforms: List[str]):
+        """Set AI platforms as JSON string"""
+        if platforms:
+            self.ai_platforms = json.dumps(platforms)
+        else:
+            self.ai_platforms = None
+    
+    # Legacy property for backward compatibility
+    @property
+    def ai_platform(self) -> Optional[str]:
+        """Return first platform for backward compatibility"""
+        platforms = self.get_platforms()
+        return platforms[0] if platforms else None
+
 class PromptSubmission(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str
     body: str
     category_id: int = Field(foreign_key="category.id")
     subcategory_id: Optional[int] = Field(default=None, foreign_key="category.id")
-    ai_platform: Optional[str] = None
+    ai_platforms: Optional[str] = None  # JSON string storing list of platforms
     instructions: Optional[str] = None
     tags: Optional[str] = None
     status: str = Field(default="pending")  # 'pending' | 'approved' | 'rejected'
@@ -49,6 +73,30 @@ class PromptSubmission(SQLModel, table=True):
     approved_prompt_id: Optional[int] = Field(default=None, foreign_key="prompt.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     reviewed_at: Optional[datetime] = None
+
+    def get_platforms(self) -> List[str]:
+        """Get list of AI platforms from JSON string"""
+        if not self.ai_platforms:
+            return []
+        try:
+            return json.loads(self.ai_platforms)
+        except (json.JSONDecodeError, TypeError):
+            # Handle legacy single platform or malformed data
+            return [self.ai_platforms] if self.ai_platforms else []
+    
+    def set_platforms(self, platforms: List[str]):
+        """Set AI platforms as JSON string"""
+        if platforms:
+            self.ai_platforms = json.dumps(platforms)
+        else:
+            self.ai_platforms = None
+    
+    # Legacy property for backward compatibility
+    @property
+    def ai_platform(self) -> Optional[str]:
+        """Return first platform for backward compatibility"""
+        platforms = self.get_platforms()
+        return platforms[0] if platforms else None
 
 class AuditLog(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

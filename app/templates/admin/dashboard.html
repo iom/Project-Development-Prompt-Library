@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
-{% block title %}Admin Dashboard - IOM Prompt Library{% endblock %}
+{% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
 <div class="mb-6">
@@ -51,14 +51,8 @@
 <div class="bg-white rounded-lg shadow p-6 mb-8">
     <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
     <div class="flex flex-wrap gap-4">
-        <a href="/admin/submissions" class="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700">
+        <a href="/secure-admin-2024/submissions" class="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700">
             Review Submissions ({{ pending_count }})
-        </a>
-        <a href="/admin/prompts" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-            Manage Prompts
-        </a>
-        <a href="/admin/categories" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-            Manage Categories
         </a>
     </div>
 </div>
@@ -72,13 +66,13 @@
 <script>
 // Load stats on page load
 document.addEventListener('DOMContentLoaded', function() {
-    fetch('/api/prompts')
+    fetch('/secure-admin-2024/api/prompts')
         .then(response => response.json())
         .then(data => {
             document.getElementById('total-prompts').textContent = data.length || 0;
         });
     
-    fetch('/api/categories')
+    fetch('/secure-admin-2024/api/categories')
         .then(response => response.json())
         .then(data => {
             document.getElementById('total-categories').textContent = data.length || 0;

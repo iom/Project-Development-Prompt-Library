@@ -1,25 +1,47 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, Form, Response
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import select
 from app.database import SessionDep
 from app.models import PromptSubmission, Prompt, Category, AuditLog
 from datetime import datetime
 import json
 
-router = APIRouter(prefix="/admin", tags=["admin"])
+router = APIRouter(prefix="/secure-admin-2024", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
 
-# Temporary admin authentication (to be replaced with Replit Auth)
+# Admin authentication for hidden path
 def admin_required(request: Request):
-    """Temporary admin check - replace with proper auth later"""
+    """Admin access control for hidden admin site"""
     import os
-    # Use environment variable for admin key (better than hardcoded)
-    required_key = os.getenv("ADMIN_KEY", "change-me-in-production")
+    
+    # Check session cookie first (for HTML requests)
+    admin_session = request.cookies.get("admin_session")
+    if admin_session == os.getenv("ADMIN_KEY"):
+        return {"admin": True}
+    
+    # Fallback to header check (for API requests)
+    required_key = os.getenv("ADMIN_KEY")
+    if not required_key:
+        raise HTTPException(status_code=500, detail="Admin key not configured")
+    
     admin_key = request.headers.get("X-Admin-Key")
-    if admin_key != required_key:
-        raise HTTPException(status_code=403, detail="Admin access required")
-    return {"admin": True}
+    if admin_key == required_key:
+        return {"admin": True}
+        
+    raise HTTPException(status_code=403, detail="Admin access required")
+
+@router.get("/api/categories")
+def admin_categories(session: SessionDep, admin=Depends(admin_required)):
+    """Get all categories for admin"""
+    categories = session.exec(select(Category)).all()
+    return categories
+
+@router.get("/api/prompts")  
+def admin_prompts(session: SessionDep, admin=Depends(admin_required)):
+    """Get all prompts for admin"""
+    prompts = session.exec(select(Prompt)).all()
+    return prompts
 
 @router.get("/api/submissions")
 def list_submissions(session: SessionDep, status: str = "pending", admin=Depends(admin_required)):
@@ -73,11 +95,6 @@ def review_submission(
     
     return {"message": f"Submission {status} successfully"}
 
-@router.get("/api/prompts")
-def list_admin_prompts(session: SessionDep, admin=Depends(admin_required)):
-    """List all prompts for admin management"""
-    prompts = session.exec(select(Prompt)).all()
-    return prompts
 
 @router.patch("/api/prompts/{prompt_id}")
 def update_prompt(
@@ -156,6 +173,43 @@ def create_category(
     session.commit()
     
     return {"message": "Category created successfully", "id": category.id}
+
+@router.get("/login", response_class=HTMLResponse)  
+def admin_login_page(request: Request):
+    """Admin login page"""
+    return templates.TemplateResponse("admin/login.html", {"request": request})
+
+@router.post("/login")
+def admin_login_submit(request: Request, admin_key: str = Form(...)):
+    """Process admin login"""
+    import os
+    required_key = os.getenv("ADMIN_KEY")
+    if not required_key:
+        raise HTTPException(status_code=500, detail="Admin key not configured")
+    
+    if admin_key == required_key:
+        response = RedirectResponse(url="/secure-admin-2024/dashboard", status_code=303)
+        response.set_cookie(
+            key="admin_session", 
+            value=admin_key, 
+            httponly=True,
+            secure=False,  # Set to True in production with HTTPS
+            max_age=3600  # 1 hour
+        )
+        return response
+    else:
+        # Return to login with error
+        return templates.TemplateResponse(
+            "admin/login.html", 
+            {"request": request, "error": "Invalid admin key"}
+        )
+
+@router.post("/logout")
+def admin_logout():
+    """Admin logout"""
+    response = RedirectResponse(url="/secure-admin-2024/login", status_code=303)
+    response.delete_cookie("admin_session")
+    return response
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, session: SessionDep, admin=Depends(admin_required)):

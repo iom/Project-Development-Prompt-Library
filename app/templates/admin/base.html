@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard - IOM Prompt Library{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .htmx-indicator {
+            display: none;
+        }
+        .htmx-request .htmx-indicator {
+            display: inline;
+        }
+        .htmx-request.htmx-indicator {
+            display: inline;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Admin Navigation -->
+    <nav class="bg-red-600 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/secure-admin-2024/dashboard" class="text-xl font-bold text-white">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        IOM Admin Dashboard
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/secure-admin-2024/dashboard" class="text-white hover:text-red-200">Dashboard</a>
+                    <a href="/secure-admin-2024/submissions" class="text-white hover:text-red-200">Review Submissions</a>
+                    <form method="post" action="/secure-admin-2024/logout" style="display: inline;">
+                        <button type="submit" class="text-white hover:text-red-200 mr-4">Logout</button>
+                    </form>
+                    <a href="/" class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800">View Public Site</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        // Copy to clipboard functionality
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Show success message
+                const msg = document.createElement('div');
+                msg.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md z-50';
+                msg.textContent = 'Copied to clipboard!';
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 2000);
+            });
+        }
+
+        // Show success message helper
+        function showMessage(text, type = 'success') {
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const msg = document.createElement('div');
+            msg.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-2 rounded-md z-50`;
+            msg.textContent = text;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+
+        // Override fetch to include admin key for API requests
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            const adminKey = sessionStorage.getItem('adminKey');
+            if (adminKey && url.includes('/secure-admin-2024/api/')) {
+                options.headers = {
+                    ...options.headers,
+                    'X-Admin-Key': adminKey
+                };
+            }
+            return originalFetch(url, options);
+        };
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

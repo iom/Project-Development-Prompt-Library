@@ -19,19 +19,6 @@
                 <div class="flex items-center space-x-4">
                     <a href="/" class="text-gray-600 hover:text-blue-600">Library</a>
                     <a href="/submit" class="text-gray-600 hover:text-blue-600">Submit Prompt</a>
-                    <div class="relative" id="adminMenu">
-                        <button onclick="toggleAdminMenu()" class="text-gray-600 hover:text-blue-600 flex items-center">
-                            Admin <i class="fas fa-chevron-down ml-1 text-xs"></i>
-                        </button>
-                        <div id="adminDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
-                            <a href="/admin/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a>
-                            <a href="/admin/submissions" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Review Submissions</a>
-                            <div class="px-4 py-2 text-xs text-gray-500 bg-yellow-50 border-t">
-                                Requires admin header
-                            </div>
-                        </div>
-                    </div>
-                    <a href="/auth/login" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Login</a>
                 </div>
             </div>
         </div>
@@ -56,19 +43,6 @@
             });
         }
 
-        // Admin menu toggle
-        function toggleAdminMenu() {
-            const dropdown = document.getElementById('adminDropdown');
-            dropdown.classList.toggle('hidden');
-        }
-
-        // Close admin menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const adminMenu = document.getElementById('adminMenu');
-            if (!adminMenu.contains(event.target)) {
-                document.getElementById('adminDropdown').classList.add('hidden');
-            }
-        });
     </script>
     {% block scripts %}{% endblock %}
 </body>

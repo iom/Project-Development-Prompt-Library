@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
 {% block title %}Review Queue - Admin{% endblock %}
 
@@ -75,7 +75,7 @@ function approveSubmission(submissionId) {
         const formData = new FormData();
         formData.append('status', 'approved');
         
-        fetch(`/admin/api/submissions/${submissionId}`, {
+        fetch(`/secure-admin-2024/api/submissions/${submissionId}`, {
             method: 'PATCH',
             body: formData
         })
@@ -98,7 +98,7 @@ function rejectSubmission(submissionId) {
         formData.append('status', 'rejected');
         formData.append('reviewer_notes', notes || '');
         
-        fetch(`/admin/api/submissions/${submissionId}`, {
+        fetch(`/secure-admin-2024/api/submissions/${submissionId}`, {
             method: 'PATCH',
             body: formData
         })

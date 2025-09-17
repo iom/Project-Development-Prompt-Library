@@ -82,6 +82,8 @@ def import_seed_data():
                 title=item['title'],
                 body=item['body'],
                 category_id=category.id,
+                ai_platform=item.get('ai_platform'),
+                instructions=item.get('instructions'),
                 status=item.get('status', 'published'),
                 tags=','.join(item.get('tags', [])) if item.get('tags') else None
             )

@@ -58,6 +58,23 @@ function selectCategory(categoryId) {
     htmx.ajax('GET', `/htmx/prompts?${params.toString()}`, {target: '#promptsList'});
 }
 
+// Toggle prompt details
+function togglePromptDetails(promptId) {
+    const details = document.getElementById(`details-${promptId}`);
+    const preview = document.getElementById(`preview-${promptId}`);
+    const toggleText = document.getElementById(`toggle-text-${promptId}`);
+    
+    if (details.classList.contains('hidden')) {
+        details.classList.remove('hidden');
+        preview.classList.add('hidden');
+        toggleText.textContent = 'Hide Details';
+    } else {
+        details.classList.add('hidden');
+        preview.classList.remove('hidden');
+        toggleText.textContent = 'View Details';
+    }
+}
+
 // Copy prompt by ID
 function copyPrompt(promptId) {
     fetch(`/api/prompts/${promptId}`)

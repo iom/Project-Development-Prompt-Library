@@ -13,49 +13,55 @@
             </a>
         </div>
 
-        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+        <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
             <table class="min-w-full divide-y divide-gray-300">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AI Platform</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">Title</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Category</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">AI Platform</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for prompt in prompts %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ prompt.title }}</div>
-                            <div class="text-sm text-gray-500">{{ prompt.body[:100] }}{% if prompt.body|length > 100 %}...{% endif %}</div>
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-4">
+                            <div class="text-sm font-medium text-gray-900 mb-1">{{ prompt.title }}</div>
+                            <div class="text-xs text-gray-500 truncate max-w-xs">{{ prompt.body[:80] }}{% if prompt.body|length > 80 %}...{% endif %}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ categories.get(prompt.category_id, 'Unknown') }}
+                        <td class="px-3 py-4 text-sm text-gray-900">
+                            <div class="truncate">{{ categories.get(prompt.category_id, 'Unknown') }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-4">
                             {% if prompt.ai_platform %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 {{ prompt.ai_platform }}
                             </span>
                             {% else %}
-                            <span class="text-sm text-gray-400">Not set</span>
+                            <span class="text-xs text-gray-400">Not set</span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                        <td class="px-3 py-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
                                 {% if prompt.status == 'published' %}bg-green-100 text-green-800
                                 {% elif prompt.status == 'draft' %}bg-yellow-100 text-yellow-800
                                 {% else %}bg-gray-100 text-gray-800{% endif %}">
                                 {{ prompt.status.title() }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a href="/secure-admin-2024/prompts/{{ prompt.id }}/edit" 
-                               class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
-                            <button onclick="archivePrompt({{ prompt.id }})" 
-                                    class="text-red-600 hover:text-red-900">Archive</button>
+                        <td class="px-4 py-4 text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="/secure-admin-2024/prompts/{{ prompt.id }}/edit" 
+                                   class="inline-flex items-center px-3 py-1 border border-blue-300 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="fas fa-edit mr-1"></i>Edit
+                                </a>
+                                <button onclick="archivePrompt({{ prompt.id }})" 
+                                        class="inline-flex items-center px-3 py-1 border border-red-300 rounded-md text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <i class="fas fa-archive mr-1"></i>Archive
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

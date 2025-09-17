@@ -154,6 +154,7 @@ def delete_prompt(prompt_id: int, session: SessionDep, admin=Depends(admin_requi
 
 @router.post("/api/categories")
 def create_category(
+    request: Request,
     session: SessionDep,
     admin=Depends(admin_required),
     name: str = Form(...),
@@ -171,6 +172,10 @@ def create_category(
     )
     session.add(category)
     session.commit()
+    
+    # Redirect back to categories page for HTML form submission
+    if "text/html" in request.headers.get("accept", ""):
+        return RedirectResponse(url="/secure-admin-2024/categories", status_code=303)
     
     return {"message": "Category created successfully", "id": category.id}
 
@@ -254,3 +259,163 @@ async def admin_submissions(request: Request, session: SessionDep, admin=Depends
             "submissions": submissions
         }
     )
+
+@router.get("/prompts", response_class=HTMLResponse)
+async def admin_prompts_page(request: Request, session: SessionDep, admin=Depends(admin_required)):
+    """Admin prompts management page"""
+    prompts = session.exec(select(Prompt)).all()
+    categories = session.exec(select(Category)).all()
+    
+    # Create category lookup
+    category_dict = {cat.id: cat.name for cat in categories}
+    
+    return templates.TemplateResponse(
+        "admin/prompts.html",
+        {
+            "request": request,
+            "prompts": prompts,
+            "categories": category_dict
+        }
+    )
+
+@router.get("/prompts/new", response_class=HTMLResponse)
+async def admin_new_prompt_page(request: Request, session: SessionDep, admin=Depends(admin_required)):
+    """New prompt form"""
+    categories = session.exec(select(Category)).all()
+    
+    return templates.TemplateResponse(
+        "admin/prompt_form.html",
+        {
+            "request": request,
+            "categories": categories,
+            "prompt": None
+        }
+    )
+
+@router.post("/prompts/new")
+async def admin_create_prompt(
+    request: Request,
+    session: SessionDep,
+    admin=Depends(admin_required),
+    title: str = Form(...),
+    body: str = Form(...),
+    category_id: int = Form(...),
+    ai_platform: str = Form(""),
+    instructions: str = Form(""),
+    tags: str = Form(""),
+    status: str = Form("published")
+):
+    """Create new prompt"""
+    prompt = Prompt(
+        title=title,
+        body=body,
+        category_id=category_id,
+        ai_platform=ai_platform if ai_platform else None,
+        instructions=instructions if instructions else None,
+        tags=tags if tags else None,
+        status=status,
+        created_by=None  # Admin created
+    )
+    
+    session.add(prompt)
+    session.commit()
+    
+    return RedirectResponse(url="/secure-admin-2024/prompts", status_code=303)
+
+@router.get("/prompts/{prompt_id}/edit", response_class=HTMLResponse)
+async def admin_edit_prompt_page(prompt_id: int, request: Request, session: SessionDep, admin=Depends(admin_required)):
+    """Edit prompt form"""
+    prompt = session.get(Prompt, prompt_id)
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    
+    categories = session.exec(select(Category)).all()
+    
+    return templates.TemplateResponse(
+        "admin/prompt_form.html",
+        {
+            "request": request,
+            "prompt": prompt,
+            "categories": categories
+        }
+    )
+
+@router.post("/prompts/{prompt_id}/edit")
+async def admin_update_prompt_form(
+    prompt_id: int,
+    request: Request,
+    session: SessionDep,
+    admin=Depends(admin_required),
+    title: str = Form(...),
+    body: str = Form(...),
+    category_id: int = Form(...),
+    ai_platform: str = Form(""),
+    instructions: str = Form(""),
+    tags: str = Form(""),
+    status: str = Form("published")
+):
+    """Update prompt via form"""
+    prompt = session.get(Prompt, prompt_id)
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    
+    prompt.title = title
+    prompt.body = body
+    prompt.category_id = category_id
+    prompt.ai_platform = ai_platform if ai_platform else None
+    prompt.instructions = instructions if instructions else None
+    prompt.tags = tags if tags else None
+    prompt.status = status
+    prompt.updated_at = datetime.utcnow()
+    
+    session.add(prompt)
+    session.commit()
+    
+    return RedirectResponse(url="/secure-admin-2024/prompts", status_code=303)
+
+@router.get("/categories", response_class=HTMLResponse)
+async def admin_categories_page(request: Request, session: SessionDep, admin=Depends(admin_required)):
+    """Admin categories management page"""
+    categories = session.exec(select(Category)).all()
+    
+    # Count prompts per category
+    category_counts = {}
+    for category in categories:
+        count = len(session.exec(
+            select(Prompt).where(Prompt.category_id == category.id)
+        ).all())
+        category_counts[category.id] = count
+    
+    return templates.TemplateResponse(
+        "admin/categories.html",
+        {
+            "request": request,
+            "categories": categories,
+            "category_counts": category_counts
+        }
+    )
+
+@router.patch("/api/categories/{category_id}")
+async def update_category(
+    category_id: int,
+    session: SessionDep,
+    admin=Depends(admin_required),
+    name: str = Form(...),
+    description: str = Form("")
+):
+    """Update a category"""
+    from slugify import slugify
+    
+    category = session.get(Category, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    category.name = name
+    category.slug = slugify(name)
+    category.description = description
+    category.updated_at = datetime.utcnow()
+    
+    session.add(category)
+    session.commit()
+    
+    return {"message": "Category updated successfully"}

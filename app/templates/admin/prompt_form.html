@@ -1,0 +1,116 @@
+{% extends "admin/base.html" %}
+
+{% block title %}
+    {% if prompt %}Edit Prompt{% else %}Add New Prompt{% endif %} - Admin
+{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-medium text-gray-900">
+                {% if prompt %}Edit Prompt{% else %}Add New Prompt{% endif %}
+            </h2>
+            <a href="/secure-admin-2024/prompts" 
+               class="text-gray-600 hover:text-gray-900">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Prompts
+            </a>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                <input type="text" 
+                       name="title" 
+                       id="title" 
+                       required
+                       value="{{ prompt.title if prompt else '' }}"
+                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+                <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                <select name="category_id" 
+                        id="category_id" 
+                        required
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select a category</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" 
+                            {% if prompt and prompt.category_id == category.id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="ai_platform" class="block text-sm font-medium text-gray-700">AI Platform</label>
+                <select name="ai_platform" 
+                        id="ai_platform"
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select platform (optional)</option>
+                    <option value="ChatGPT" {% if prompt and prompt.ai_platform == 'ChatGPT' %}selected{% endif %}>ChatGPT</option>
+                    <option value="Claude" {% if prompt and prompt.ai_platform == 'Claude' %}selected{% endif %}>Claude</option>
+                    <option value="Copilot" {% if prompt and prompt.ai_platform == 'Copilot' %}selected{% endif %}>Copilot</option>
+                    <option value="Copilot (Researcher)" {% if prompt and prompt.ai_platform == 'Copilot (Researcher)' %}selected{% endif %}>Copilot (Researcher)</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="instructions" class="block text-sm font-medium text-gray-700">Usage Instructions</label>
+                <textarea name="instructions" 
+                          id="instructions" 
+                          rows="4"
+                          placeholder="Provide clear instructions for how to use this prompt effectively..."
+                          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ prompt.instructions if prompt else '' }}</textarea>
+                <p class="mt-2 text-sm text-gray-500">Describe how to use this prompt, any prerequisites, document uploads needed, etc.</p>
+            </div>
+
+            <div>
+                <label for="body" class="block text-sm font-medium text-gray-700">Prompt Content</label>
+                <textarea name="body" 
+                          id="body" 
+                          rows="12" 
+                          required
+                          placeholder="Enter the full prompt text here..."
+                          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ prompt.body if prompt else '' }}</textarea>
+            </div>
+
+            <div>
+                <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
+                <input type="text" 
+                       name="tags" 
+                       id="tags" 
+                       value="{{ prompt.tags if prompt else '' }}"
+                       placeholder="Enter tags separated by commas"
+                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <p class="mt-2 text-sm text-gray-500">Separate multiple tags with commas</p>
+            </div>
+
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                <select name="status" 
+                        id="status" 
+                        required
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="published" {% if not prompt or prompt.status == 'published' %}selected{% endif %}>Published</option>
+                    <option value="draft" {% if prompt and prompt.status == 'draft' %}selected{% endif %}>Draft</option>
+                    <option value="archived" {% if prompt and prompt.status == 'archived' %}selected{% endif %}>Archived</option>
+                </select>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <a href="/secure-admin-2024/prompts" 
+                   class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                    {% if prompt %}Update Prompt{% else %}Create Prompt{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

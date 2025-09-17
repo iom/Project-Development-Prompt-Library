@@ -53,7 +53,7 @@
                     {% for platform in platforms %}
                     <div class="flex items-center">
                         <input type="checkbox" 
-                               name="ai_platforms" 
+                               name="platform_choice" 
                                value="{{ platform }}"
                                {% if platform in selected_platforms %}checked{% endif %}
                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" 
@@ -126,7 +126,7 @@
 <script>
 // Handle form submission to convert checkboxes to JSON
 document.querySelector('form').addEventListener('submit', function(e) {
-    const checkboxes = document.querySelectorAll('input[name="ai_platforms"]:checked');
+    const checkboxes = document.querySelectorAll('input[name="platform_choice"]:checked');
     const selectedPlatforms = Array.from(checkboxes).map(cb => cb.value);
     document.getElementById('ai_platforms_json').value = JSON.stringify(selectedPlatforms);
 });

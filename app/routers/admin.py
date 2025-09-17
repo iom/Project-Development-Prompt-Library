@@ -174,6 +174,20 @@ def create_category(
     
     return {"message": "Category created successfully", "id": category.id}
 
+@router.get("/")
+def admin_root(request: Request):
+    """Admin root - redirect to appropriate page"""
+    import os
+    
+    # Check if user is already authenticated
+    admin_session = request.cookies.get("admin_session")
+    required_key = os.getenv("ADMIN_KEY")
+    
+    if admin_session == required_key:
+        return RedirectResponse(url="/secure-admin-2024/dashboard", status_code=303)
+    else:
+        return RedirectResponse(url="/secure-admin-2024/login", status_code=303)
+
 @router.get("/login", response_class=HTMLResponse)  
 def admin_login_page(request: Request):
     """Admin login page"""

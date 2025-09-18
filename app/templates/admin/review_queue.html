@@ -19,12 +19,21 @@
                 </p>
             </div>
             <div class="flex space-x-2">
+                {% if submission.suggested_category_name %}
+                <button 
+                    onclick="showCategoryResolutionModal({{ submission.id }}, '{{ submission.suggested_category_name }}')"
+                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                >
+                    Approve & Set Category
+                </button>
+                {% else %}
                 <button 
                     onclick="approveSubmission({{ submission.id }})"
                     class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
                 >
                     Approve
                 </button>
+                {% endif %}
                 <button 
                     onclick="rejectSubmission({{ submission.id }})"
                     class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
@@ -143,5 +152,126 @@ function rejectSubmission(submissionId) {
         });
     }
 }
+
+function showCategoryResolutionModal(submissionId, suggestedName) {
+    const modal = document.getElementById('categoryModal');
+    const suggestedNameSpan = document.getElementById('modalSuggestedName');
+    const existingSelect = document.getElementById('existingCategorySelect');
+    const newNameInput = document.getElementById('newCategoryName');
+    
+    suggestedNameSpan.textContent = suggestedName;
+    newNameInput.value = suggestedName;
+    modal.dataset.submissionId = submissionId;
+    
+    // Fetch existing categories
+    fetch('/secure-admin-2024/api/categories')
+        .then(response => response.json())
+        .then(categories => {
+            existingSelect.innerHTML = '<option value="">Select existing category</option>';
+            categories.forEach(cat => {
+                existingSelect.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+            });
+        });
+    
+    modal.classList.remove('hidden');
+}
+
+function closeCategoryModal() {
+    document.getElementById('categoryModal').classList.add('hidden');
+}
+
+function approveWithCategory() {
+    const modal = document.getElementById('categoryModal');
+    const submissionId = modal.dataset.submissionId;
+    const action = document.querySelector('input[name="categoryAction"]:checked').value;
+    const existingCategoryId = document.getElementById('existingCategorySelect').value;
+    const newCategoryName = document.getElementById('newCategoryName').value;
+    
+    if (action === 'existing' && !existingCategoryId) {
+        alert('Please select an existing category');
+        return;
+    }
+    
+    if (action === 'new' && !newCategoryName.trim()) {
+        alert('Please enter a category name');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('status', 'approved');
+    formData.append('category_action', action);
+    if (action === 'existing') {
+        formData.append('category_id', existingCategoryId);
+    } else {
+        formData.append('new_category_name', newCategoryName);
+    }
+    
+    fetch(`/secure-admin-2024/api/submissions/${submissionId}`, {
+        method: 'PATCH',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Submission approved successfully!');
+        closeCategoryModal();
+        location.reload();
+    })
+    .catch(error => {
+        alert('Error approving submission');
+        console.error(error);
+    });
+}
 </script>
+
+<!-- Category Resolution Modal -->
+<div id="categoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                <i class="fas fa-folder-plus text-yellow-600"></i>
+            </div>
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Resolve Category Suggestion</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        The user suggested: "<span id="modalSuggestedName" class="font-medium"></span>"
+                    </p>
+                    <p class="text-sm text-gray-500 mt-2">
+                        Choose how to handle this category:
+                    </p>
+                </div>
+                
+                <div class="text-left space-y-4 mt-4">
+                    <div>
+                        <label class="flex items-center">
+                            <input type="radio" name="categoryAction" value="existing" class="mr-2">
+                            <span>Map to existing category:</span>
+                        </label>
+                        <select id="existingCategorySelect" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="">Loading categories...</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="flex items-center">
+                            <input type="radio" name="categoryAction" value="new" checked class="mr-2">
+                            <span>Create new category:</span>
+                        </label>
+                        <input type="text" id="newCategoryName" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
+                    </div>
+                </div>
+                
+                <div class="items-center px-4 py-3 space-x-2 flex justify-end mt-6">
+                    <button onclick="closeCategoryModal()" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md hover:bg-gray-600">
+                        Cancel
+                    </button>
+                    <button onclick="approveWithCategory()" class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md hover:bg-green-700">
+                        Approve
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

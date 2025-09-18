@@ -25,6 +25,7 @@ app.include_router(htmx.router)
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
     
+    
     # Check if database is empty and load seed data
     from sqlmodel import Session, select
     from app.models import Category, Prompt

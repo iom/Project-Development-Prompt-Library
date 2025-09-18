@@ -57,6 +57,9 @@ def review_submission(
     session: SessionDep,
     status: str = Form(...),  # 'approved' or 'rejected'
     reviewer_notes: str = Form(""),
+    category_action: str = Form(None),  # 'existing' or 'new'
+    category_id: int = Form(None),  # For mapping to existing category
+    new_category_name: str = Form(None),  # For creating new category
     admin=Depends(admin_required)
 ):
     """Approve or reject a submission"""
@@ -73,10 +76,65 @@ def review_submission(
     
     # If approved, create a prompt
     if status == "approved":
+        final_category_id = submission.category_id
+        
+        # Handle category resolution for suggested categories
+        if submission.suggested_category_name and category_action:
+            if category_action == "existing":
+                if not category_id:
+                    raise HTTPException(status_code=400, detail="Category ID required for existing category mapping")
+                
+                # Validate that the category exists
+                existing_category = session.get(Category, category_id)
+                if not existing_category:
+                    raise HTTPException(status_code=404, detail="Selected category not found")
+                final_category_id = category_id
+                
+            elif category_action == "new":
+                if not new_category_name or not new_category_name.strip():
+                    raise HTTPException(status_code=400, detail="Category name required for new category creation")
+                
+                # Create new category with uniqueness handling
+                from slugify import slugify
+                category_name = new_category_name.strip()
+                base_slug = slugify(category_name)
+                
+                try:
+                    # Check for existing category with same name or slug
+                    existing = session.exec(
+                        select(Category).where(
+                            (Category.name == category_name) | (Category.slug == base_slug)
+                        )
+                    ).first()
+                    
+                    if existing:
+                        # If exact match exists, reuse it
+                        final_category_id = existing.id
+                    else:
+                        # Create new category
+                        new_category = Category(
+                            name=category_name,
+                            slug=base_slug,
+                            description=f"Category created from user suggestion: {submission.suggested_category_name}"
+                        )
+                        session.add(new_category)
+                        session.commit()
+                        session.refresh(new_category)
+                        final_category_id = new_category.id
+                        
+                except Exception as e:
+                    # Handle any database integrity errors
+                    session.rollback()
+                    raise HTTPException(status_code=409, detail=f"Category creation failed: {str(e)}")
+        
+        # Ensure we have a valid category_id
+        if not final_category_id:
+            raise HTTPException(status_code=400, detail="Valid category is required for approval")
+        
         prompt = Prompt(
             title=submission.title,
             body=submission.body,
-            category_id=submission.category_id,
+            category_id=final_category_id,
             subcategory_id=submission.subcategory_id,
             instructions=submission.instructions,
             tags=submission.tags,
@@ -382,13 +440,6 @@ async def admin_update_prompt_form(
     status: str = Form("published")
 ):
     """Update prompt via form"""
-    # DEBUG: Print all form data received
-    print(f"FORM DEBUG - All parameters received:")
-    print(f"  title: {title}")
-    print(f"  platform_choice: {platform_choice}")
-    print(f"  ai_platforms: {repr(ai_platforms)}")
-    print(f"  category_id: {category_id}")
-    print(f"  status: {status}")
     
     prompt = session.get(Prompt, prompt_id)
     if not prompt:
@@ -404,10 +455,8 @@ async def admin_update_prompt_form(
     
     # Set platforms - use either checkbox values or JSON field
     if platform_choice:  # Direct checkbox values received
-        print(f"Using platform_choice: {platform_choice}")
         prompt.set_platforms(platform_choice)
     elif ai_platforms is not None:  # Fallback to JSON field
-        print(f"Using ai_platforms JSON: {ai_platforms}")
         if ai_platforms:
             try:
                 if ai_platforms.startswith('['):
@@ -420,8 +469,6 @@ async def admin_update_prompt_form(
                     prompt.set_platforms([ai_platforms])
         else:
             prompt.set_platforms([])
-    else:
-        print("No platform data received")
     
     session.add(prompt)
     session.commit()

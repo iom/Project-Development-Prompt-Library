@@ -327,17 +327,24 @@ async def admin_create_prompt(
         created_by=None  # Admin created
     )
     
-    # Set platforms
+    # Set platforms for create
+    print(f"DEBUG CREATE: Received ai_platforms: '{ai_platforms}' (type: {type(ai_platforms)})")
     if ai_platforms:
         try:
             if ai_platforms.startswith('['):
                 platforms = json.loads(ai_platforms)
+                print(f"DEBUG CREATE: Parsed JSON platforms: {platforms}")
             else:
                 platforms = [p.strip() for p in ai_platforms.split(',') if p.strip()]
+                print(f"DEBUG CREATE: Parsed comma-separated platforms: {platforms}")
             prompt.set_platforms(platforms)
-        except (json.JSONDecodeError, AttributeError):
+        except (json.JSONDecodeError, AttributeError) as e:
+            print(f"DEBUG CREATE: Error parsing platforms: {e}")
             if ai_platforms:
                 prompt.set_platforms([ai_platforms])
+    else:
+        print("DEBUG CREATE: No ai_platforms received, setting empty array")
+        prompt.set_platforms([])
     
     session.add(prompt)
     session.commit()
@@ -390,17 +397,22 @@ async def admin_update_prompt_form(
     prompt.updated_at = datetime.utcnow()
     
     # Set platforms
+    print(f"DEBUG: Received ai_platforms: '{ai_platforms}' (type: {type(ai_platforms)})")
     if ai_platforms:
         try:
             if ai_platforms.startswith('['):
                 platforms = json.loads(ai_platforms)
+                print(f"DEBUG: Parsed JSON platforms: {platforms}")
             else:
                 platforms = [p.strip() for p in ai_platforms.split(',') if p.strip()]
+                print(f"DEBUG: Parsed comma-separated platforms: {platforms}")
             prompt.set_platforms(platforms)
-        except (json.JSONDecodeError, AttributeError):
+        except (json.JSONDecodeError, AttributeError) as e:
+            print(f"DEBUG: Error parsing platforms: {e}")
             if ai_platforms:
                 prompt.set_platforms([ai_platforms])
     else:
+        print("DEBUG: No ai_platforms received, setting empty array")
         prompt.set_platforms([])
     
     session.add(prompt)

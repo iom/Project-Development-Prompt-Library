@@ -25,6 +25,8 @@ app.include_router(htmx.router)
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
     
+    # Run database migrations
+    _run_migrations()
     
     # Check if database is empty and load seed data
     from sqlmodel import Session, select
@@ -101,6 +103,30 @@ def create_db_and_tables():
                 print(f"Loaded {len(data)} prompts into the database")
             else:
                 print("Seed file not found, skipping seed data loading")
+
+def _run_migrations():
+    """Run database migrations"""
+    from sqlmodel import Session, text
+    import sqlite3
+    
+    try:
+        # Connect directly to SQLite to add missing columns
+        with Session(engine) as session:
+            # Check if suggested_category_name column exists
+            result = session.exec(text("PRAGMA table_info(promptsubmission)")).all()
+            columns = [row[1] for row in result]  # Column name is at index 1
+            
+            if 'suggested_category_name' not in columns:
+                print("Adding suggested_category_name column to promptsubmission table...")
+                session.exec(text("ALTER TABLE promptsubmission ADD COLUMN suggested_category_name TEXT"))
+                session.commit()
+                print("Migration completed successfully")
+            else:
+                print("Database schema is up to date")
+                
+    except Exception as e:
+        print(f"Migration warning: {e}")
+        # Don't fail startup if migration has issues
 
 @app.get("/")
 async def root(request: Request):

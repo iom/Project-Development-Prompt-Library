@@ -62,11 +62,12 @@ class PromptSubmission(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str
     body: str
-    category_id: int = Field(foreign_key="category.id")
+    category_id: Optional[int] = Field(default=None, foreign_key="category.id")
     subcategory_id: Optional[int] = Field(default=None, foreign_key="category.id")
     ai_platforms: Optional[str] = None  # JSON string storing list of platforms
     instructions: Optional[str] = None
     tags: Optional[str] = None
+    suggested_category_name: Optional[str] = None  # For new category suggestions
     status: str = Field(default="pending")  # 'pending' | 'approved' | 'rejected'
     submitted_by: Optional[int] = Field(default=None, foreign_key="user.id")
     reviewer_notes: Optional[str] = None

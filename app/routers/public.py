@@ -77,22 +77,55 @@ def create_submission(
     session: SessionDep,
     title: str = Form(...),
     body: str = Form(...),
-    category_id: int = Form(...),
+    category_id: str = Form(...),  # Can be "new" or an actual ID
     subcategory_id: int | None = Form(None),
-    ai_platform: str | None = Form(None),
+    platform_choice: list = Form([]),
+    ai_platforms: str | None = Form(None),
+    suggested_category_name: str | None = Form(None),
     instructions: str | None = Form(None),
     tags: str | None = Form(None)
 ):
     """Create a new prompt submission"""
+    # Handle category selection
+    if category_id == "new":
+        if not suggested_category_name or suggested_category_name.strip() == "":
+            raise HTTPException(status_code=400, detail="Suggested category name is required when selecting 'new category'")
+        actual_category_id = None
+    else:
+        try:
+            actual_category_id = int(category_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid category ID")
+        suggested_category_name = None
+    
+    # Handle AI platforms - prefer direct checkbox values over JSON
+    platforms = []
+    if platform_choice:
+        platforms = platform_choice
+    elif ai_platforms:
+        try:
+            if ai_platforms.startswith('['):
+                platforms = json.loads(ai_platforms)
+            else:
+                platforms = [p.strip() for p in ai_platforms.split(',') if p.strip()]
+        except (json.JSONDecodeError, AttributeError):
+            if ai_platforms:
+                platforms = [ai_platforms]
+    
     submission = PromptSubmission(
         title=title,
         body=body,
-        category_id=category_id,
+        category_id=actual_category_id,
         subcategory_id=subcategory_id,
-        ai_platform=ai_platform,
+        suggested_category_name=suggested_category_name,
         instructions=instructions,
         tags=tags
     )
+    
+    # Set platforms using the helper method
+    if platforms:
+        submission.set_platforms(platforms)
+    
     session.add(submission)
     session.commit()
     return {"message": "Submission created successfully", "id": submission.id}

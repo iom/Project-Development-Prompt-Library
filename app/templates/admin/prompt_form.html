@@ -47,7 +47,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-3">AI Platforms</label>
                 <div class="space-y-2">
-                    {% set platforms = ['ChatGPT', 'Claude', 'Copilot', 'Copilot (Researcher)', 'Perplexity', 'Gemini'] %}
+                    {% set platforms = ['ChatGPT', 'Claude', 'Copilot', 'Copilot (Researcher)', 'Perplexity', 'Gemini', 'Other'] %}
                     {% set selected_platforms = prompt.get_platforms() if prompt else [] %}
                     
                     {% for platform in platforms %}
@@ -128,7 +128,28 @@
 document.querySelector('form').addEventListener('submit', function(e) {
     const checkboxes = document.querySelectorAll('input[name="platform_choice"]:checked');
     const selectedPlatforms = Array.from(checkboxes).map(cb => cb.value);
-    document.getElementById('ai_platforms_json').value = JSON.stringify(selectedPlatforms);
+    const jsonValue = JSON.stringify(selectedPlatforms);
+    
+    console.log('Selected platforms:', selectedPlatforms);
+    console.log('JSON value:', jsonValue);
+    
+    document.getElementById('ai_platforms_json').value = jsonValue;
+    
+    // Debug: log the hidden field value
+    console.log('Hidden field value:', document.getElementById('ai_platforms_json').value);
+});
+
+// Also populate on page load for edit forms
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (form) {
+        // Check if this is an edit form and populate the hidden field
+        const checkboxes = document.querySelectorAll('input[name="platform_choice"]:checked');
+        if (checkboxes.length > 0) {
+            const selectedPlatforms = Array.from(checkboxes).map(cb => cb.value);
+            document.getElementById('ai_platforms_json').value = JSON.stringify(selectedPlatforms);
+        }
+    }
 });
 </script>
 {% endblock %}

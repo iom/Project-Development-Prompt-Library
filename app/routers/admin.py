@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Form, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Form, Response, File, UploadFile
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import select
 from sqlalchemy import func
 from app.database import SessionDep
-from app.models import PromptSubmission, Prompt, Category, AuditLog
+from app.models import PromptSubmission, Prompt, Category, AuditLog, PromptDocument
+from app.services.object_storage import object_storage_service
 from datetime import datetime
+from typing import Optional, List
 import json
 
 router = APIRouter(prefix="/secure-admin-2024", tags=["admin"])
@@ -600,3 +602,192 @@ async def move_category_down(
     session.commit()
     
     return {"message": "Category moved down successfully"}
+
+# Document/File Upload Endpoints
+
+@router.post("/api/documents/upload")
+async def get_presigned_upload_url(
+    session: SessionDep,
+    admin=Depends(admin_required),
+    filename: str = Form(...),
+    content_type: str = Form(...),
+    is_public: bool = Form(False),
+    prompt_id: Optional[int] = Form(None)
+):
+    """Get presigned upload URL for document upload to object storage"""
+    try:
+        # Validate file type
+        is_valid, detected_mime = object_storage_service.validate_file_type(filename)
+        if not is_valid:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"File type not allowed. Detected: {detected_mime}"
+            )
+        
+        # Use detected MIME type if different from provided
+        final_content_type = detected_mime if detected_mime != "unknown" else content_type
+        
+        # Generate presigned upload URL
+        upload_data = object_storage_service.generate_presigned_upload_url(
+            filename=filename,
+            content_type=final_content_type,
+            is_public=is_public,
+            expiry_minutes=15
+        )
+        
+        # Return upload data for frontend to use
+        return {
+            "upload_url": upload_data["upload_url"],
+            "file_path": upload_data["file_path"],
+            "unique_filename": upload_data["unique_filename"],
+            "original_filename": upload_data["original_filename"],
+            "content_type": upload_data["content_type"],
+            "is_public": upload_data["is_public"],
+            "expires_at": upload_data["expires_at"]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate upload URL: {str(e)}")
+
+@router.post("/api/documents")
+async def save_document_metadata(
+    session: SessionDep,
+    admin=Depends(admin_required),
+    prompt_id: int = Form(...),
+    title: str = Form(...),
+    document_type: str = Form(...),  # 'file' or 'link'
+    file_path: Optional[str] = Form(None),  # For uploaded files
+    external_url: Optional[str] = Form(None),  # For external links
+    file_size: Optional[int] = Form(None),
+    mime_type: Optional[str] = Form(None),
+    sort_order: int = Form(0)
+):
+    """Save document metadata after successful upload or add external link"""
+    
+    # Validate prompt exists
+    prompt = session.get(Prompt, prompt_id)
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    
+    # Validate document type and required fields
+    if document_type not in ["file", "link"]:
+        raise HTTPException(status_code=400, detail="Document type must be 'file' or 'link'")
+    
+    if document_type == "file" and not file_path:
+        raise HTTPException(status_code=400, detail="file_path is required for file documents")
+    
+    if document_type == "link" and not external_url:
+        raise HTTPException(status_code=400, detail="external_url is required for link documents")
+    
+    # For uploaded files, verify file exists in object storage
+    if document_type == "file" and file_path:
+        try:
+            file_metadata = object_storage_service.get_file_metadata(file_path)
+            if not file_metadata:
+                raise HTTPException(status_code=404, detail="Uploaded file not found in storage")
+            
+            # Use actual file metadata if not provided
+            if not file_size:
+                file_size = file_metadata.get("size")
+            if not mime_type:
+                mime_type = file_metadata.get("content_type")
+                
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to verify uploaded file: {str(e)}")
+    
+    # Create document record
+    document = PromptDocument(
+        prompt_id=prompt_id,
+        title=title,
+        document_type=document_type,
+        file_path=file_path,
+        external_url=external_url,
+        file_size=file_size,
+        mime_type=mime_type,
+        sort_order=sort_order
+    )
+    
+    session.add(document)
+    session.commit()
+    session.refresh(document)
+    
+    return {
+        "message": "Document saved successfully",
+        "document_id": document.id,
+        "document": {
+            "id": document.id,
+            "title": document.title,
+            "document_type": document.document_type,
+            "file_path": document.file_path,
+            "external_url": document.external_url,
+            "file_size": document.file_size,
+            "mime_type": document.mime_type,
+            "sort_order": document.sort_order,
+            "created_at": document.created_at.isoformat()
+        }
+    }
+
+@router.get("/api/documents")
+async def list_documents(
+    session: SessionDep,
+    admin=Depends(admin_required),
+    prompt_id: Optional[int] = None
+):
+    """List documents, optionally filtered by prompt_id"""
+    query = select(PromptDocument).order_by(PromptDocument.sort_order, PromptDocument.created_at)
+    
+    if prompt_id:
+        query = query.where(PromptDocument.prompt_id == prompt_id)
+    
+    documents = session.exec(query).all()
+    
+    return {
+        "documents": [
+            {
+                "id": doc.id,
+                "prompt_id": doc.prompt_id,
+                "title": doc.title,
+                "document_type": doc.document_type,
+                "file_path": doc.file_path,
+                "external_url": doc.external_url,
+                "file_size": doc.file_size,
+                "mime_type": doc.mime_type,
+                "sort_order": doc.sort_order,
+                "created_at": doc.created_at.isoformat(),
+                "updated_at": doc.updated_at.isoformat()
+            }
+            for doc in documents
+        ]
+    }
+
+@router.delete("/api/documents/{doc_id}")
+async def delete_document(
+    doc_id: int,
+    session: SessionDep,
+    admin=Depends(admin_required)
+):
+    """Delete document and associated file from object storage if applicable"""
+    
+    document = session.get(PromptDocument, doc_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # If it's a file document, delete from object storage
+    if document.document_type == "file" and document.file_path:
+        try:
+            deleted = object_storage_service.delete_file(document.file_path)
+            if not deleted:
+                # File was not found in storage, but we'll continue with database deletion
+                pass
+        except Exception as e:
+            # Log error but continue with database deletion
+            print(f"Warning: Failed to delete file from storage: {str(e)}")
+    
+    # Delete from database
+    session.delete(document)
+    session.commit()
+    
+    return {
+        "message": "Document deleted successfully",
+        "document_id": doc_id
+    }

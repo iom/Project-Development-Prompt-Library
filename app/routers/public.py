@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, Query, Request, Form, HTTPException
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from sqlmodel import select, or_, col
 from app.database import SessionDep
-from app.models import Prompt, Category, PromptSubmission
+from app.models import Prompt, Category, PromptSubmission, PromptDocument
+from app.services.object_storage import object_storage_service
 from typing import List, Dict, Any
 import json
+import requests
 
 router = APIRouter(tags=["public"])
 templates = Jinja2Templates(directory="app/templates")
@@ -188,3 +190,78 @@ async def submit_form(request: Request, session: SessionDep):
         "submit.html",
         {"request": request, "categories": categories}
     )
+
+# File Serving Endpoints
+
+@router.get("/documents/{file_path:path}")
+async def serve_document(file_path: str, session: SessionDep):
+    """Serve uploaded files securely
+    
+    This endpoint serves files from object storage. For private files, it checks
+    if the document exists in the database and is associated with a published prompt.
+    Public files are served directly.
+    """
+    try:
+        # Check if file exists in object storage
+        file_metadata = object_storage_service.get_file_metadata(file_path)
+        if not file_metadata:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        # Check if this is a public file
+        is_public = object_storage_service.is_file_public(file_path)
+        
+        if not is_public:
+            # For private files, verify the document exists in database and is associated with published prompt
+            document = session.exec(
+                select(PromptDocument).where(PromptDocument.file_path == file_path)
+            ).first()
+            
+            if not document:
+                raise HTTPException(status_code=404, detail="Document not found")
+            
+            # Check if associated prompt is published
+            prompt = session.get(Prompt, document.prompt_id)
+            if not prompt or prompt.status != "published":
+                raise HTTPException(status_code=404, detail="Document not accessible")
+        
+        # Generate presigned download URL and redirect to it
+        download_url = object_storage_service.generate_presigned_download_url(
+            file_path=file_path,
+            expiry_minutes=60  # URL valid for 1 hour
+        )
+        
+        # Redirect to the presigned URL for direct download
+        return RedirectResponse(url=download_url, status_code=302)
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error serving file: {str(e)}"
+        )
+
+@router.get("/api/documents/{document_id}")
+async def get_document_info(document_id: int, session: SessionDep):
+    """Get document information by document ID"""
+    document = session.get(PromptDocument, document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Check if associated prompt is published
+    prompt = session.get(Prompt, document.prompt_id)
+    if not prompt or prompt.status != "published":
+        raise HTTPException(status_code=404, detail="Document not accessible")
+    
+    # Return document information
+    return {
+        "id": document.id,
+        "title": document.title,
+        "document_type": document.document_type,
+        "file_size": document.file_size,
+        "mime_type": document.mime_type,
+        "external_url": document.external_url,
+        "download_url": f"/documents/{document.file_path}" if document.file_path else None,
+        "created_at": document.created_at.isoformat()
+    }

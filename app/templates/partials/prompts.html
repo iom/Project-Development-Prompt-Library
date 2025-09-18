@@ -82,6 +82,48 @@
                 </h4>
                 <p class="text-sm text-gray-700 whitespace-pre-line">{{ prompt.body }}</p>
             </div>
+            
+            {% set documents = prompt_documents.get(prompt.id, []) %}
+            {% if documents %}
+            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                <h4 class="text-sm font-semibold text-blue-800 mb-3">
+                    <i class="fas fa-paperclip mr-1"></i>
+                    Document Downloads
+                </h4>
+                <div class="space-y-2">
+                    {% for doc in documents %}
+                    <div class="flex items-center justify-between p-2 bg-white rounded border">
+                        <div class="flex items-center space-x-2">
+                            {% if doc.document_type == 'file' %}
+                                <i class="fas fa-file text-blue-600"></i>
+                                <span class="text-sm font-medium text-gray-900">{{ doc.title }}</span>
+                                {% if doc.mime_type %}
+                                    <span class="text-xs text-gray-500">({{ doc.mime_type.split('/')[-1].upper() }})</span>
+                                {% endif %}
+                            {% else %}
+                                <i class="fas fa-external-link-alt text-green-600"></i>
+                                <span class="text-sm font-medium text-gray-900">{{ doc.title }}</span>
+                                <span class="text-xs text-gray-500">(External Link)</span>
+                            {% endif %}
+                        </div>
+                        {% if doc.document_type == 'file' %}
+                            <a href="/documents/{{ doc.file_path }}" 
+                               target="_blank"
+                               class="bg-blue-600 text-white px-3 py-1 text-xs rounded hover:bg-blue-700">
+                                <i class="fas fa-download mr-1"></i>Download
+                            </a>
+                        {% else %}
+                            <a href="{{ doc.external_url }}" 
+                               target="_blank"
+                               class="bg-green-600 text-white px-3 py-1 text-xs rounded hover:bg-green-700">
+                                <i class="fas fa-external-link-alt mr-1"></i>Open Link
+                            </a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
     {% endfor %}

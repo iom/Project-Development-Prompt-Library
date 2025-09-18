@@ -432,12 +432,20 @@ async def admin_edit_prompt_page(prompt_id: int, request: Request, session: Sess
     
     categories = session.exec(select(Category)).all()
     
+    # Get existing documents for this prompt
+    documents = session.exec(
+        select(PromptDocument)
+        .where(PromptDocument.prompt_id == prompt_id)
+        .order_by(PromptDocument.sort_order, PromptDocument.created_at)
+    ).all()
+    
     return templates.TemplateResponse(
         "admin/prompt_form.html",
         {
             "request": request,
             "prompt": prompt,
-            "categories": categories
+            "categories": categories,
+            "documents": documents
         }
     )
 

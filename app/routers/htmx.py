@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from sqlmodel import select, or_, col
 from app.database import SessionDep
-from app.models import Prompt, Category
+from app.models import Prompt, Category, PromptDocument
 
 router = APIRouter(prefix="/htmx", tags=["htmx"])
 templates = Jinja2Templates(directory="app/templates")
@@ -57,6 +57,21 @@ async def prompts_partial(
     # Get category names for display
     categories = {cat.id: cat.name for cat in session.exec(select(Category).order_by(Category.sort_order)).all()}
     
+    # Get documents for each prompt
+    prompt_documents = {}
+    if prompts:
+        prompt_ids = [p.id for p in prompts]
+        documents_query = session.exec(
+            select(PromptDocument)
+            .where(PromptDocument.prompt_id.in_(prompt_ids))
+            .order_by(PromptDocument.sort_order, PromptDocument.created_at)
+        ).all()
+        
+        for doc in documents_query:
+            if doc.prompt_id not in prompt_documents:
+                prompt_documents[doc.prompt_id] = []
+            prompt_documents[doc.prompt_id].append(doc)
+    
     # Simple pagination
     total = len(prompts)
     start = (page - 1) * page_size
@@ -70,6 +85,7 @@ async def prompts_partial(
             "total": total,
             "page": page,
             "page_size": page_size,
-            "categories": categories
+            "categories": categories,
+            "prompt_documents": prompt_documents
         }
     )

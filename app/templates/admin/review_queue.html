@@ -42,10 +42,40 @@
 
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                    <strong>Category:</strong> {{ submission.category_id }}
+                    <strong>Category:</strong> 
+                    {% if submission.suggested_category_name %}
+                        <span class="text-orange-600 font-medium">
+                            New Category: "{{ submission.suggested_category_name }}"
+                        </span>
+                    {% elif submission.category_id %}
+                        {{ submission.category_id }}
+                    {% else %}
+                        <span class="text-gray-500">Not specified</span>
+                    {% endif %}
                 </div>
                 <div>
-                    <strong>AI Platform:</strong> {{ submission.ai_platform or 'Not specified' }}
+                    <strong>AI Platforms:</strong> 
+                    {% set platforms = submission.get_platforms() %}
+                    {% if platforms %}
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            {% for platform in platforms %}
+                                {% set badge_color = {
+                                    'ChatGPT': 'bg-green-100 text-green-800',
+                                    'Claude': 'bg-orange-100 text-orange-800',
+                                    'Copilot': 'bg-blue-100 text-blue-800',
+                                    'Copilot (Researcher)': 'bg-blue-100 text-blue-800',
+                                    'Perplexity': 'bg-purple-100 text-purple-800',
+                                    'Gemini': 'bg-yellow-100 text-yellow-800',
+                                    'Other': 'bg-red-100 text-red-800'
+                                }.get(platform, 'bg-gray-100 text-gray-800') %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ badge_color }}">
+                                    {{ platform }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="text-gray-500">Not specified</span>
+                    {% endif %}
                 </div>
                 {% if submission.instructions %}
                 <div class="col-span-2">

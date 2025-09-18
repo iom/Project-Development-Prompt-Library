@@ -100,6 +100,19 @@ class PromptSubmission(SQLModel, table=True):
         platforms = self.get_platforms()
         return platforms[0] if platforms else None
 
+class PromptDocument(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    prompt_id: int = Field(foreign_key="prompt.id")
+    title: str  # Display name for the document
+    document_type: str  # 'file' or 'link'
+    file_path: Optional[str] = None  # For uploaded files (object storage path)
+    external_url: Optional[str] = None  # For external links
+    file_size: Optional[int] = None  # File size in bytes (for uploaded files)
+    mime_type: Optional[str] = None  # MIME type (for uploaded files)
+    sort_order: int = Field(default=0)  # For ordering documents within a prompt
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
 class AuditLog(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     actor_user_id: int = Field(foreign_key="user.id")

@@ -308,16 +308,14 @@ async function uploadFile() {
     
     try {
         // First, get a presigned upload URL
+        const formData = new FormData();
+        formData.append('filename', file.name);
+        formData.append('content_type', file.type);
+        formData.append('size', file.size.toString());
+        
         const uploadResponse = await fetch('/secure-admin-2024/api/documents/upload', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                filename: file.name,
-                content_type: file.type,
-                size: file.size
-            })
+            body: formData
         });
         
         if (!uploadResponse.ok) {

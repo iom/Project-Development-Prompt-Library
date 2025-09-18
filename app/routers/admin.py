@@ -619,11 +619,20 @@ async def get_presigned_upload_url(
     admin=Depends(admin_required),
     filename: str = Form(...),
     content_type: str = Form(...),
+    size: int = Form(...),
     is_public: bool = Form(False),
     prompt_id: Optional[int] = Form(None)
 ):
     """Get presigned upload URL for document upload to object storage"""
     try:
+        # Validate file size (max 50MB)
+        MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB in bytes
+        if size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File size too large. Maximum allowed: {MAX_FILE_SIZE // (1024*1024)}MB"
+            )
+        
         # Validate file type
         is_valid, detected_mime = object_storage_service.validate_file_type(filename)
         if not is_valid:

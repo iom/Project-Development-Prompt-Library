@@ -110,17 +110,62 @@ def _run_migrations():
     import sqlite3
     
     try:
-        # Connect directly to SQLite to add missing columns
         with Session(engine) as session:
-            # Check if suggested_category_name column exists
+            # Check table structure
             result = session.exec(text("PRAGMA table_info(promptsubmission)")).all()
-            columns = [row[1] for row in result]  # Column name is at index 1
+            columns = {row[1]: row for row in result}  # {column_name: (cid, name, type, notnull, default, pk)}
             
+            # Migration 1: Add suggested_category_name column if missing
             if 'suggested_category_name' not in columns:
                 print("Adding suggested_category_name column to promptsubmission table...")
                 session.exec(text("ALTER TABLE promptsubmission ADD COLUMN suggested_category_name TEXT"))
                 session.commit()
-                print("Migration completed successfully")
+                print("Migration 1 completed: suggested_category_name column added")
+            
+            # Migration 2: Fix category_id to allow NULL values
+            if 'category_id' in columns and columns['category_id'][3] == 1:  # notnull == 1 means NOT NULL
+                print("Fixing category_id column to allow NULL values...")
+                
+                # SQLite doesn't support ALTER COLUMN, so we need to recreate the table
+                session.exec(text("""
+                    CREATE TABLE promptsubmission_temp (
+                        id INTEGER PRIMARY KEY,
+                        title TEXT NOT NULL,
+                        body TEXT NOT NULL,
+                        category_id INTEGER,
+                        subcategory_id INTEGER,
+                        ai_platforms TEXT,
+                        instructions TEXT,
+                        tags TEXT,
+                        suggested_category_name TEXT,
+                        status TEXT NOT NULL DEFAULT 'pending',
+                        submitted_by INTEGER,
+                        reviewer_notes TEXT,
+                        approved_prompt_id INTEGER,
+                        created_at TEXT NOT NULL,
+                        reviewed_at TEXT,
+                        FOREIGN KEY (category_id) REFERENCES category(id),
+                        FOREIGN KEY (subcategory_id) REFERENCES category(id),
+                        FOREIGN KEY (submitted_by) REFERENCES user(id),
+                        FOREIGN KEY (approved_prompt_id) REFERENCES prompt(id)
+                    )
+                """))
+                
+                # Copy existing data
+                session.exec(text("""
+                    INSERT INTO promptsubmission_temp 
+                    SELECT id, title, body, category_id, subcategory_id, ai_platforms, 
+                           instructions, tags, suggested_category_name, status, submitted_by, 
+                           reviewer_notes, approved_prompt_id, created_at, reviewed_at
+                    FROM promptsubmission
+                """))
+                
+                # Replace old table
+                session.exec(text("DROP TABLE promptsubmission"))
+                session.exec(text("ALTER TABLE promptsubmission_temp RENAME TO promptsubmission"))
+                
+                session.commit()
+                print("Migration 2 completed: category_id now allows NULL values")
             else:
                 print("Database schema is up to date")
                 

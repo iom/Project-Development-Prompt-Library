@@ -18,7 +18,7 @@ Preferred communication style: Simple, everyday language.
 
 **Data Models**: The system uses four main entities:
 - `User`: Handles authentication with role-based access (admin/user)
-- `Category`: Hierarchical category system with parent-child relationships
+- `Category`: Hierarchical category system with parent-child relationships and custom ordering via sort_order field
 - `Prompt`: Core content entity with metadata like AI platform, tags, and status
 - `PromptSubmission`: Workflow entity for reviewing user-submitted prompts
 
@@ -29,6 +29,8 @@ Preferred communication style: Simple, everyday language.
 **Admin Interface**: Separated admin functionality through a dedicated router (`/secure-admin-2024`) with hidden URL paths and key-based authentication. This provides secure access to content management features while keeping the public interface completely open.
 
 **Content Management Workflow**: Implements a submission-review-approval workflow where public users can submit prompts that require admin approval before appearing in the public library. This ensures content quality while enabling community contributions.
+
+**Category Ordering System**: Provides administrators with simple up/down arrow controls to customize the display order of categories across all public and admin interfaces. New categories automatically appear at the end of the list, and the ordering is preserved consistently throughout the application.
 
 ## External Dependencies
 

@@ -130,13 +130,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
     const selectedPlatforms = Array.from(checkboxes).map(cb => cb.value);
     const jsonValue = JSON.stringify(selectedPlatforms);
     
-    console.log('Selected platforms:', selectedPlatforms);
-    console.log('JSON value:', jsonValue);
-    
     document.getElementById('ai_platforms_json').value = jsonValue;
-    
-    // Debug: log the hidden field value
-    console.log('Hidden field value:', document.getElementById('ai_platforms_json').value);
 });
 
 // Also populate on page load for edit forms

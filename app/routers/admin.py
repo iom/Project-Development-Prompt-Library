@@ -311,7 +311,7 @@ async def admin_create_prompt(
     title: str = Form(...),
     body: str = Form(...),
     category_id: int = Form(...),
-    ai_platforms: str = Form(""),
+    ai_platforms: str = Form(None),
     instructions: str = Form(""),
     tags: str = Form(""),
     status: str = Form("published")
@@ -373,7 +373,7 @@ async def admin_update_prompt_form(
     title: str = Form(...),
     body: str = Form(...),
     category_id: int = Form(...),
-    ai_platforms: str = Form(""),
+    ai_platforms: str = Form(None),
     instructions: str = Form(""),
     tags: str = Form(""),
     status: str = Form("published")

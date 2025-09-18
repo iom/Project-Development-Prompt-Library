@@ -137,12 +137,11 @@ document.querySelector('form').addEventListener('submit', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     if (form) {
-        // Check if this is an edit form and populate the hidden field
+        // Always populate the hidden field with current state (even if empty)
         const checkboxes = document.querySelectorAll('input[name="platform_choice"]:checked');
-        if (checkboxes.length > 0) {
-            const selectedPlatforms = Array.from(checkboxes).map(cb => cb.value);
-            document.getElementById('ai_platforms_json').value = JSON.stringify(selectedPlatforms);
-        }
+        const selectedPlatforms = Array.from(checkboxes).map(cb => cb.value);
+        document.getElementById('ai_platforms_json').value = JSON.stringify(selectedPlatforms);
+        
     }
 });
 </script>

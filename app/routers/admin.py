@@ -107,6 +107,7 @@ def update_prompt(
     status: str = Form(None),
     category_id: int = Form(None),
     subcategory_id: int = Form(None),
+    platform_choice: list = Form([]),
     ai_platforms: str = Form(None),
     instructions: str = Form(None),
     tags: str = Form(None)
@@ -311,6 +312,7 @@ async def admin_create_prompt(
     title: str = Form(...),
     body: str = Form(...),
     category_id: int = Form(...),
+    platform_choice: list = Form([]),
     ai_platforms: str = Form(None),
     instructions: str = Form(""),
     tags: str = Form(""),
@@ -373,12 +375,21 @@ async def admin_update_prompt_form(
     title: str = Form(...),
     body: str = Form(...),
     category_id: int = Form(...),
+    platform_choice: list = Form([]),
     ai_platforms: str = Form(None),
     instructions: str = Form(""),
     tags: str = Form(""),
     status: str = Form("published")
 ):
     """Update prompt via form"""
+    # DEBUG: Print all form data received
+    print(f"FORM DEBUG - All parameters received:")
+    print(f"  title: {title}")
+    print(f"  platform_choice: {platform_choice}")
+    print(f"  ai_platforms: {repr(ai_platforms)}")
+    print(f"  category_id: {category_id}")
+    print(f"  status: {status}")
+    
     prompt = session.get(Prompt, prompt_id)
     if not prompt:
         raise HTTPException(status_code=404, detail="Prompt not found")
@@ -391,8 +402,12 @@ async def admin_update_prompt_form(
     prompt.status = status
     prompt.updated_at = datetime.utcnow()
     
-    # Set platforms - only update if provided to prevent accidental clearing
-    if ai_platforms is not None:
+    # Set platforms - use either checkbox values or JSON field
+    if platform_choice:  # Direct checkbox values received
+        print(f"Using platform_choice: {platform_choice}")
+        prompt.set_platforms(platform_choice)
+    elif ai_platforms is not None:  # Fallback to JSON field
+        print(f"Using ai_platforms JSON: {ai_platforms}")
         if ai_platforms:
             try:
                 if ai_platforms.startswith('['):
@@ -405,6 +420,8 @@ async def admin_update_prompt_form(
                     prompt.set_platforms([ai_platforms])
         else:
             prompt.set_platforms([])
+    else:
+        print("No platform data received")
     
     session.add(prompt)
     session.commit()

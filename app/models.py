@@ -17,6 +17,7 @@ class Category(SQLModel, table=True):
     slug: str = Field(index=True, unique=True)
     description: Optional[str] = None
     parent_id: Optional[int] = Field(default=None, foreign_key="category.id")
+    sort_order: int = Field(default=0)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 

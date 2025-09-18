@@ -30,6 +30,7 @@ def create_db_and_tables():
     
     # Check if database is empty and load seed data
     from sqlmodel import Session, select
+    from sqlalchemy import func
     from app.models import Category, Prompt
     import json
     import os
@@ -65,10 +66,17 @@ def create_db_and_tables():
                         if existing_cat:
                             category_cache[category_name] = existing_cat
                         else:
+                            # Get next sort_order for seeded category
+                            max_sort_order = session.exec(
+                                select(func.max(Category.sort_order))
+                            ).first()
+                            next_sort_order = (max_sort_order or 0) + 1
+                            
                             new_cat = Category(
                                 name=category_name,
                                 slug=slugify(category_name),
-                                description=f"Category for {category_name} prompts"
+                                description=f"Category for {category_name} prompts",
+                                sort_order=next_sort_order
                             )
                             session.add(new_cat)
                             session.commit()
@@ -122,7 +130,24 @@ def _run_migrations():
                 session.commit()
                 print("Migration 1 completed: suggested_category_name column added")
             
-            # Migration 2: Fix category_id to allow NULL values
+            # Migration 2: Add sort_order column to category table if missing
+            category_result = session.exec(text("PRAGMA table_info(category)")).all()
+            category_columns = {row[1]: row for row in category_result}
+            
+            if 'sort_order' not in category_columns:
+                print("Adding sort_order column to category table...")
+                session.exec(text("ALTER TABLE category ADD COLUMN sort_order INTEGER DEFAULT 0"))
+                
+                # Set initial sort_order values based on current ID order
+                session.exec(text("""
+                    UPDATE category 
+                    SET sort_order = id 
+                    WHERE sort_order = 0
+                """))
+                session.commit()
+                print("Migration completed: sort_order column added to category table")
+            
+            # Migration 3: Fix category_id to allow NULL values
             if 'category_id' in columns and columns['category_id'][3] == 1:  # notnull == 1 means NOT NULL
                 print("Fixing category_id column to allow NULL values...")
                 
@@ -165,7 +190,7 @@ def _run_migrations():
                 session.exec(text("ALTER TABLE promptsubmission_temp RENAME TO promptsubmission"))
                 
                 session.commit()
-                print("Migration 2 completed: category_id now allows NULL values")
+                print("Migration 3 completed: category_id now allows NULL values")
             else:
                 print("Database schema is up to date")
                 

@@ -11,7 +11,7 @@ templates = Jinja2Templates(directory="app/templates")
 @router.get("/categories", response_class=HTMLResponse)
 async def categories_partial(request: Request, session: SessionDep):
     """Render categories for sidebar"""
-    categories = session.exec(select(Category).where(col(Category.parent_id).is_(None))).all()
+    categories = session.exec(select(Category).where(col(Category.parent_id).is_(None)).order_by(Category.sort_order)).all()
     
     return templates.TemplateResponse(
         "partials/categories.html",
@@ -55,7 +55,7 @@ async def prompts_partial(
     prompts = session.exec(stmt).all()
     
     # Get category names for display
-    categories = {cat.id: cat.name for cat in session.exec(select(Category)).all()}
+    categories = {cat.id: cat.name for cat in session.exec(select(Category).order_by(Category.sort_order)).all()}
     
     # Simple pagination
     total = len(prompts)

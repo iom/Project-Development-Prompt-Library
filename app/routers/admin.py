@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Form, Response
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import select
+from sqlalchemy import func
 from app.database import SessionDep
 from app.models import PromptSubmission, Prompt, Category, AuditLog
 from datetime import datetime
@@ -34,7 +35,7 @@ def admin_required(request: Request):
 @router.get("/api/categories")
 def admin_categories(session: SessionDep, admin=Depends(admin_required)):
     """Get all categories for admin"""
-    categories = session.exec(select(Category)).all()
+    categories = session.exec(select(Category).order_by(Category.sort_order)).all()
     return categories
 
 @router.get("/api/prompts")  
@@ -111,11 +112,18 @@ def review_submission(
                         # If exact match exists, reuse it
                         final_category_id = existing.id
                     else:
-                        # Create new category
+                        # Create new category with proper sort_order
+                        # Get next sort_order for new category (appears at end)
+                        max_sort_order = session.exec(
+                            select(func.max(Category.sort_order))
+                        ).first()
+                        next_sort_order = (max_sort_order or 0) + 1
+                        
                         new_category = Category(
                             name=category_name,
                             slug=base_slug,
-                            description=f"Category created from user suggestion: {submission.suggested_category_name}"
+                            description=f"Category created from user suggestion: {submission.suggested_category_name}",
+                            sort_order=next_sort_order
                         )
                         session.add(new_category)
                         session.commit()
@@ -234,11 +242,18 @@ def create_category(
     """Create a new category"""
     from slugify import slugify
     
+    # Get the highest sort_order and add 1 for new category (appears at end)
+    max_sort_order = session.exec(
+        select(func.max(Category.sort_order))
+    ).first()
+    next_sort_order = (max_sort_order or 0) + 1
+    
     category = Category(
         name=name,
         slug=slugify(name),
         description=description,
-        parent_id=parent_id
+        parent_id=parent_id,
+        sort_order=next_sort_order
     )
     session.add(category)
     session.commit()
@@ -478,7 +493,7 @@ async def admin_update_prompt_form(
 @router.get("/categories", response_class=HTMLResponse)
 async def admin_categories_page(request: Request, session: SessionDep, admin=Depends(admin_required)):
     """Admin categories management page"""
-    categories = session.exec(select(Category)).all()
+    categories = session.exec(select(Category).order_by(Category.sort_order)).all()
     
     # Count prompts per category
     category_counts = {}
@@ -521,3 +536,67 @@ async def update_category(
     session.commit()
     
     return {"message": "Category updated successfully"}
+
+@router.patch("/api/categories/{category_id}/move-up")
+async def move_category_up(
+    category_id: int,
+    session: SessionDep,
+    admin=Depends(admin_required)
+):
+    """Move category up in sort order"""
+    category = session.get(Category, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    # Find the category with the next lower sort_order
+    prev_category = session.exec(
+        select(Category)
+        .where(Category.sort_order < category.sort_order)
+        .order_by(Category.sort_order.desc())
+    ).first()
+    
+    if not prev_category:
+        return {"message": "Category is already at the top"}
+    
+    # Swap sort orders
+    category.sort_order, prev_category.sort_order = prev_category.sort_order, category.sort_order
+    category.updated_at = datetime.utcnow()
+    prev_category.updated_at = datetime.utcnow()
+    
+    session.add(category)
+    session.add(prev_category)
+    session.commit()
+    
+    return {"message": "Category moved up successfully"}
+
+@router.patch("/api/categories/{category_id}/move-down")
+async def move_category_down(
+    category_id: int,
+    session: SessionDep,
+    admin=Depends(admin_required)
+):
+    """Move category down in sort order"""
+    category = session.get(Category, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    # Find the category with the next higher sort_order
+    next_category = session.exec(
+        select(Category)
+        .where(Category.sort_order > category.sort_order)
+        .order_by(Category.sort_order.asc())
+    ).first()
+    
+    if not next_category:
+        return {"message": "Category is already at the bottom"}
+    
+    # Swap sort orders
+    category.sort_order, next_category.sort_order = next_category.sort_order, category.sort_order
+    category.updated_at = datetime.utcnow()
+    next_category.updated_at = datetime.utcnow()
+    
+    session.add(category)
+    session.add(next_category)
+    session.commit()
+    
+    return {"message": "Category moved down successfully"}

@@ -69,7 +69,7 @@ def get_prompt(prompt_id: int, session: SessionDep):
 @router.get("/api/categories")
 def list_categories(session: SessionDep):
     """List all categories"""
-    categories = session.exec(select(Category)).all()
+    categories = session.exec(select(Category).order_by(Category.sort_order)).all()
     return categories
 
 @router.post("/api/submissions")
@@ -183,7 +183,7 @@ async def prompt_detail(request: Request, prompt_id: int, session: SessionDep):
 @router.get("/submit", response_class=HTMLResponse)
 async def submit_form(request: Request, session: SessionDep):
     """Submit prompt form"""
-    categories = session.exec(select(Category).where(col(Category.parent_id).is_(None))).all()
+    categories = session.exec(select(Category).where(col(Category.parent_id).is_(None)).order_by(Category.sort_order)).all()
     return templates.TemplateResponse(
         "submit.html",
         {"request": request, "categories": categories}

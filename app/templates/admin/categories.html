@@ -22,6 +22,20 @@
                             </p>
                         </div>
                         <div class="flex space-x-2 ml-4">
+                            <!-- Order Controls -->
+                            <div class="flex flex-col space-y-1">
+                                <button onclick="moveCategory({{ category.id }}, 'up')"
+                                        class="text-gray-500 hover:text-gray-700 text-xs py-1 px-2 rounded border border-gray-300 hover:bg-gray-50"
+                                        title="Move Up">
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
+                                <button onclick="moveCategory({{ category.id }}, 'down')"
+                                        class="text-gray-500 hover:text-gray-700 text-xs py-1 px-2 rounded border border-gray-300 hover:bg-gray-50"
+                                        title="Move Down">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <!-- Edit Button -->
                             <button onclick="editCategory({{ category.id }}, '{{ category.name }}', '{{ category.description }}')" 
                                     class="text-blue-600 hover:text-blue-900 text-sm">
                                 Edit
@@ -146,5 +160,30 @@ document.getElementById('editForm').addEventListener('submit', async function(e)
         alert('Error updating category');
     }
 });
+
+// Category ordering functions
+async function moveCategory(categoryId, direction) {
+    try {
+        const response = await fetch(`/secure-admin-2024/api/categories/${categoryId}/move-${direction}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            location.reload(); // Refresh to show new order
+        } else {
+            const result = await response.json();
+            if (result.message && result.message.includes('already at')) {
+                // Silent handling for "already at top/bottom" messages
+                return;
+            }
+            alert('Error moving category');
+        }
+    } catch (error) {
+        alert('Error moving category');
+    }
+}
 </script>
 {% endblock %}

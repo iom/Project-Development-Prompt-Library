@@ -26,6 +26,8 @@ class ObjectStorageService:
     
     def _sign_object_url(self, bucket_name: str, object_name: str, method: str, ttl_sec: int) -> str:
         """Sign an object URL using Replit sidecar endpoint"""
+        if not bucket_name:
+            raise HTTPException(status_code=500, detail="Object storage bucket not configured")
         try:
             expires_at = datetime.utcnow() + timedelta(seconds=ttl_sec)
             request_data = {

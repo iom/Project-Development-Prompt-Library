@@ -319,7 +319,15 @@ async function uploadFile() {
         });
         
         if (!uploadResponse.ok) {
-            throw new Error('Failed to get upload URL');
+            const errorData = await uploadResponse.text();
+            let errorMessage = 'Failed to get upload URL';
+            try {
+                const errorJson = JSON.parse(errorData);
+                errorMessage = errorJson.detail || errorMessage;
+            } catch (e) {
+                errorMessage = errorData || errorMessage;
+            }
+            throw new Error(errorMessage);
         }
         
         const uploadData = await uploadResponse.json();
@@ -338,19 +346,17 @@ async function uploadFile() {
         }
         
         // Save document metadata
+        const metadataFormData = new FormData();
+        metadataFormData.append('prompt_id', promptId);
+        metadataFormData.append('title', title);
+        metadataFormData.append('document_type', 'file');
+        metadataFormData.append('file_path', uploadData.file_path);
+        metadataFormData.append('file_size', file.size.toString());
+        metadataFormData.append('mime_type', file.type);
+        
         const metadataResponse = await fetch('/secure-admin-2024/api/documents', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                prompt_id: promptId,
-                title: title,
-                document_type: 'file',
-                file_path: uploadData.file_path,
-                file_size: file.size,
-                mime_type: file.type
-            })
+            body: metadataFormData
         });
         
         if (!metadataResponse.ok) {
@@ -388,21 +394,28 @@ async function addLink() {
     const promptId = {{ prompt.id if prompt else 'null' }};
     
     try {
+        const formData = new FormData();
+        formData.append('prompt_id', promptId);
+        formData.append('title', title);
+        formData.append('document_type', 'link');
+        formData.append('external_url', url);
+        
         const response = await fetch('/secure-admin-2024/api/documents', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                prompt_id: promptId,
-                title: title,
-                document_type: 'link',
-                external_url: url
-            })
+            body: formData
         });
         
         if (!response.ok) {
-            throw new Error('Failed to add link');
+            const errorData = await response.text();
+            let errorMessage = 'Failed to add link';
+            try {
+                const errorJson = JSON.parse(errorData);
+                errorMessage = errorJson.detail || errorMessage;
+            } catch (e) {
+                // If not JSON, use the raw text
+                errorMessage = errorData || errorMessage;
+            }
+            throw new Error(errorMessage);
         }
         
         const documentData = await response.json();

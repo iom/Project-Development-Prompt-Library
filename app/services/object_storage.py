@@ -34,29 +34,62 @@ class ObjectStorageService:
                 "bucket_name": bucket_name,
                 "object_name": object_name,
                 "method": method,
-                "expires_at": expires_at.isoformat()
+                "expires_at": expires_at.isoformat() + "Z"  # Ensure proper ISO format with Z
             }
             
+            # First get credentials from the sidecar
+            credential_response = requests.get(
+                f"{REPLIT_SIDECAR_ENDPOINT}/credential",
+                timeout=10
+            )
+            
+            if not credential_response.ok:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to get credentials: {credential_response.status_code}"
+                )
+            
+            # Now sign the URL with proper headers
             response = requests.post(
                 f"{REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url",
                 json=request_data,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {credential_response.json().get('access_token', '')}"
+                },
                 timeout=30
             )
             
             if not response.ok:
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Failed to sign object URL: {response.status_code}"
-                )
+                error_detail = f"Failed to sign object URL: {response.status_code}"
+                try:
+                    error_content = response.text
+                    if error_content:
+                        error_detail += f" - {error_content}"
+                except:
+                    pass
+                raise HTTPException(status_code=500, detail=error_detail)
             
             result = response.json()
-            return result.get("signed_url")
+            signed_url = result.get("signed_url")
+            if not signed_url:
+                raise HTTPException(
+                    status_code=500, 
+                    detail="No signed URL returned from object storage service"
+                )
+            return signed_url
             
+        except HTTPException:
+            raise
         except requests.RequestException as e:
             raise HTTPException(
                 status_code=500,
                 detail=f"Error communicating with object storage service: {str(e)}"
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Unexpected error signing object URL: {str(e)}"
             )
     
     def generate_presigned_upload_url(

@@ -18,12 +18,21 @@ echo "Installing Python dependencies..."
 python -m pip install --upgrade pip
 
 # Install from requirements.txt (should exist from GitHub workflow)
+echo "Current directory: $(pwd)"
+echo "Files in current directory:"
+ls -la
+
 if [ -f "requirements.txt" ]; then
-    echo "Installing from requirements.txt..."
+    echo "Found requirements.txt, installing dependencies..."
+    cat requirements.txt
     pip install -r requirements.txt
+elif [ -f "/home/site/wwwroot/requirements.txt" ]; then
+    echo "Found requirements.txt in /home/site/wwwroot, installing dependencies..."
+    pip install -r /home/site/wwwroot/requirements.txt
 else
-    echo "ERROR: requirements.txt not found!"
-    exit 1
+    echo "ERROR: requirements.txt not found in current directory or /home/site/wwwroot!"
+    echo "Attempting to install core dependencies directly..."
+    pip install fastapi uvicorn sqlmodel azure-storage-blob azure-core jinja2 python-multipart python-slugify requests alembic aiohttp
 fi
 
 # Verify critical modules can be imported

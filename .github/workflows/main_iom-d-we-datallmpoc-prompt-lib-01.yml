@@ -30,14 +30,14 @@
                         python -m pip install --upgrade pip
                         pip install toml
                         python - <<'PY'
-          import toml, sys
-          data = toml.load('pyproject.toml')
-          deps = data.get('project', {}).get('dependencies', [])
-          with open('requirements.txt', 'w') as f:
-              for dep in deps:
-                  f.write(dep + '\n')
-          print("Wrote requirements.txt with", len(deps), "deps")
-          PY
+import toml, sys
+data = toml.load('pyproject.toml')
+deps = data.get('project', {}).get('dependencies', [])
+with open('requirements.txt', 'w') as f:
+    for dep in deps:
+        f.write(dep + '\n')
+print("Wrote requirements.txt with", len(deps), "deps")
+PY
                       else
                         echo "ERROR: Neither requirements.txt nor pyproject.toml found." >&2
                         exit 1

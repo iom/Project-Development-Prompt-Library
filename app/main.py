@@ -5,19 +5,29 @@ from sqlmodel import SQLModel
 from app.database import engine
 from app.routers import public, admin, auth, htmx
 from app.models import *  # Import all models to register them
+import os
+from pathlib import Path
 
 app = FastAPI(title="IOM Prompt Library", description="A library of prompts for IOM project development")
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+# Get the base directory - handle both local and Azure paths
+base_dir = Path(__file__).parent.parent
+static_dir = base_dir / "app" / "static"
+
+# Mount static files with Azure-compatible path
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+else:
+    print(f"Warning: Static directory not found at {static_dir}")
 
 # Health check endpoint for Azure
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "IOM Prompt Library"}
 
-# Templates
-templates = Jinja2Templates(directory="app/templates")
+# Templates - Azure-compatible path
+template_dir = base_dir / "app" / "templates"
+templates = Jinja2Templates(directory=str(template_dir))
 
 # Include routers
 app.include_router(public.router)
@@ -28,12 +38,15 @@ app.include_router(htmx.router)
 # Create tables on startup
 @app.on_event("startup")
 def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
-    
-    # Run database migrations
-    _run_migrations()
-    
-    # Check if database is empty and load seed data
+    try:
+        print("Creating database tables...")
+        SQLModel.metadata.create_all(engine)
+        print("Database tables created successfully")
+        
+        # Run database migrations
+        _run_migrations()
+        
+        # Check if database is empty and load seed data
     from sqlmodel import Session, select
     from sqlalchemy import func
     from app.models import Category, Prompt
@@ -49,9 +62,21 @@ def create_db_and_tables():
         if categories_count == 0:
             print("Database is empty. Loading seed data...")
             
-            # Load seed data
-            seed_file = Path("seed/prompts_seed.json")
-            if seed_file.exists():
+            # Load seed data - try multiple possible paths
+            seed_paths = [
+                Path("seed/prompts_seed.json"),
+                base_dir / "seed" / "prompts_seed.json",
+                Path("/home/site/wwwroot/seed/prompts_seed.json")
+            ]
+            
+            seed_file = None
+            for path in seed_paths:
+                if path.exists():
+                    seed_file = path
+                    break
+            
+            if seed_file:
+                print(f"Loading seed data from {seed_file}")
                 with open(seed_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                 
@@ -116,6 +141,9 @@ def create_db_and_tables():
                 print(f"Loaded {len(data)} prompts into the database")
             else:
                 print("Seed file not found, skipping seed data loading")
+    except Exception as e:
+        print(f"Error during database initialization: {e}")
+        # Don't fail startup completely, just log the error
 
 def _run_migrations():
     """Run database migrations"""

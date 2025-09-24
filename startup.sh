@@ -11,7 +11,13 @@ echo "Using port: $PORT"
 cd /home/site/wwwroot
 
 # Add current directory to Python path for module imports
-export PYTHONPATH="/home/site/wwwroot:$PYTHONPATH"
+export PYTHONPATH="/home/site/wwwroot:/home/site/wwwroot/app:$PYTHONPATH"
+
+# Create __init__.py in app directory if it doesn't exist
+if [ ! -f "app/__init__.py" ]; then
+    touch app/__init__.py
+    echo "Created app/__init__.py"
+fi
 
 # Install dependencies
 echo "Installing Python dependencies..."
@@ -37,7 +43,17 @@ fi
 
 # Verify critical modules can be imported
 echo "Verifying module imports..."
+echo "Current PYTHONPATH: $PYTHONPATH"
+echo "Current working directory: $(pwd)"
+echo "Contents of current directory:"
+ls -la
+
 python -c "
+import sys
+print('Python path:')
+for path in sys.path:
+    print(f'  {path}')
+
 try:
     import azure.storage.blob
     print('✓ Azure Blob Storage module available')
@@ -50,7 +66,14 @@ try:
     print('✓ App module can be imported')
 except ImportError as e:
     print(f'✗ App import error: {e}')
-    # Don't exit here, let uvicorn handle it
+    print('Attempting to add app directory to sys.path...')
+    sys.path.insert(0, '/home/site/wwwroot')
+    try:
+        import app.main
+        print('✓ App module imported after path fix')
+    except ImportError as e2:
+        print(f'✗ Still cannot import app: {e2}')
+        exit(1)
 "
 
 # Initialize database with proper error handling

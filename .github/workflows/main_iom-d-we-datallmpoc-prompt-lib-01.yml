@@ -65,14 +65,11 @@ jobs:
         with:
           name: python-app
           path: |
-            .
-            !venv/
-            !.git/
-            !__pycache__/
-            !*.pyc
-            !.pytest_cache/
-            !.github/
-            !node_modules/
+            app/
+            requirements.txt
+            startup.sh
+            seed/
+            pyproject.toml
           retention-days: 30
 
   deploy:

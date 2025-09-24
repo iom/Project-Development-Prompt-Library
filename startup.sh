@@ -1,3 +1,4 @@
+
 #!/bin/bash
 # Azure App Service startup script
 echo "Starting FastAPI application on Azure..."
@@ -9,36 +10,57 @@ echo "Using port: $PORT"
 # Change to the application directory
 cd /home/site/wwwroot
 
-# Install dependencies if not already installed
-echo "Checking Python dependencies..."
+# Add current directory to Python path for module imports
+export PYTHONPATH="/home/site/wwwroot:$PYTHONPATH"
+
+# Install dependencies
+echo "Installing Python dependencies..."
 python -m pip install --upgrade pip
 
-# Check if requirements.txt exists, if not generate it from pyproject.toml
-if [ ! -f "requirements.txt" ]; then
-    echo "requirements.txt not found, generating from pyproject.toml..."
-    pip install toml
-    python -c "
-import toml
-data = toml.load('pyproject.toml')
-deps = data['project']['dependencies']
-with open('requirements.txt', 'w') as f:
-    for dep in deps:
-        f.write(dep + '\n')
-"
+# Install from requirements.txt (should exist from GitHub workflow)
+if [ -f "requirements.txt" ]; then
+    echo "Installing from requirements.txt..."
+    pip install -r requirements.txt
+else
+    echo "ERROR: requirements.txt not found!"
+    exit 1
 fi
 
-pip install -r requirements.txt
-
-# Initialize database and create tables
-echo "Initializing database..."
+# Verify critical modules can be imported
+echo "Verifying module imports..."
 python -c "
-from app.database import engine
-from sqlmodel import SQLModel
-print('Creating database tables...')
-SQLModel.metadata.create_all(engine)
-print('Database initialization complete')
+try:
+    import azure.storage.blob
+    print('✓ Azure Blob Storage module available')
+except ImportError as e:
+    print(f'✗ Azure module error: {e}')
+    exit(1)
+
+try:
+    import app.main
+    print('✓ App module can be imported')
+except ImportError as e:
+    print(f'✗ App import error: {e}')
+    # Don't exit here, let uvicorn handle it
 "
 
-# Start the application with proper error handling
+# Initialize database with proper error handling
+echo "Initializing database..."
+python -c "
+import sys
+sys.path.insert(0, '/home/site/wwwroot')
+
+try:
+    from app.database import engine
+    from sqlmodel import SQLModel
+    print('Creating database tables...')
+    SQLModel.metadata.create_all(engine)
+    print('✓ Database initialization complete')
+except Exception as e:
+    print(f'Database initialization error: {e}')
+    # Continue anyway, app will handle it
+"
+
+# Start the application
 echo "Starting FastAPI server on port $PORT..."
 exec uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1

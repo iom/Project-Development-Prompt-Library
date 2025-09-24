@@ -29,17 +29,31 @@ jobs:
           python -m venv venv
           source venv/bin/activate
       
-      - name: Generate requirements.txt from pyproject.toml
+      - name: Ensure requirements.txt exists
         run: |
-          pip install toml
-          python -c "
-          import toml
-          data = toml.load('pyproject.toml')
-          deps = data['project']['dependencies']
-          with open('requirements.txt', 'w') as f:
-              for dep in deps:
-                  f.write(dep + '\n')
-          "
+          # Use existing requirements.txt if it exists, otherwise generate from pyproject.toml
+          if [ ! -f "requirements.txt" ]; then
+            echo "Generating requirements.txt from pyproject.toml..."
+            pip install toml
+            python -c "
+import toml
+data = toml.load('pyproject.toml')
+deps = data['project']['dependencies']
+with open('requirements.txt', 'w') as f:
+    for dep in deps:
+        f.write(dep + '\n')
+"
+          else
+            echo "Using existing requirements.txt"
+          fi
+          
+          # Verify requirements.txt contains azure packages
+          if ! grep -q "azure-storage-blob" requirements.txt; then
+            echo "azure-storage-blob>=12.19.0" >> requirements.txt
+          fi
+          if ! grep -q "azure-core" requirements.txt; then
+            echo "azure-core>=1.30.0" >> requirements.txt
+          fi
 
       - name: Install dependencies
         run: pip install -r requirements.txt

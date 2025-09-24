@@ -90,4 +90,3 @@ jobs:
           app-name: 'iom-d-we-datallmpoc-prompt-lib-01'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5BF3B71B25AF441B8C3B893DC6954C68 }}
-          startup-command: 'bash startup.sh'

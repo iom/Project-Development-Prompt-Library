@@ -64,6 +64,7 @@ jobs:
             startup.sh
             seed/
             pyproject.toml
+            prompts.db
           retention-days: 30
 
   deploy:

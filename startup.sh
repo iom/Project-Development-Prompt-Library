@@ -6,7 +6,7 @@ set -e
 PORT=${PORT:-8000}
 
 # Change to app directory
-cd /home/site/wwwroot
+#cd /home/site/wwwroot
 
 # Install dependencies
 pip install -r requirements.txt

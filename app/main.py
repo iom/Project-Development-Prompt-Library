@@ -11,6 +11,11 @@ app = FastAPI(title="IOM Prompt Library", description="A library of prompts for 
 # Mount static files
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+# Health check endpoint for Azure
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "IOM Prompt Library"}
+
 # Templates
 templates = Jinja2Templates(directory="app/templates")
 

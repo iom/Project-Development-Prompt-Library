@@ -98,17 +98,36 @@ echo "Starting FastAPI server on port $PORT..."
 echo "Working directory: $(pwd)"
 echo "Python path: $PYTHONPATH"
 
-# Try different approaches to start the app
+# Debug directory structure
+echo "=== Directory Structure Debug ==="
+echo "Root directory contents:"
+ls -la
+echo ""
+echo "App directory contents:"
+ls -la app/ 2>/dev/null || echo "app directory not found"
+echo ""
+
+# Ensure we're in the right directory
+cd /home/site/wwwroot
+
+# Check if app/main.py exists
 if [ -f "app/main.py" ]; then
-    echo "Starting with app.main:app..."
-    exec uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
-elif [ -f "/home/site/wwwroot/app/main.py" ]; then
-    echo "Starting with full path reference..."
-    cd /home/site/wwwroot
+    echo "✓ Found app/main.py"
+    echo "Starting FastAPI with: python -m uvicorn app.main:app"
     exec python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
 else
-    echo "ERROR: Cannot find app/main.py"
-    ls -la
-    ls -la app/ 2>/dev/null || echo "app directory not found"
-    exit 1
+    echo "✗ app/main.py not found"
+    echo "Attempting to locate main.py..."
+    find /home/site/wwwroot -name "main.py" -type f 2>/dev/null || echo "No main.py files found"
+    
+    # Try alternative locations
+    if [ -f "main.py" ]; then
+        echo "Found main.py in root, starting directly"
+        exec python -m uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1
+    else
+        echo "ERROR: Cannot locate FastAPI application"
+        echo "Available Python files:"
+        find /home/site/wwwroot -name "*.py" -type f 2>/dev/null || echo "No Python files found"
+        exit 1
+    fi
 fi

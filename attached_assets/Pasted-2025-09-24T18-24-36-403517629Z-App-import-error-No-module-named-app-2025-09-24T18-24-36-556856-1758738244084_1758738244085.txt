@@ -1,0 +1,59 @@
+2025-09-24T18:24:36.403517629Z ✗ App import error: No module named 'app'
+2025-09-24T18:24:36.556856680Z Initializing database...
+2025-09-24T18:24:37.610640885Z Database initialization error: No module named 'app'
+2025-09-24T18:24:37.704324064Z Starting FastAPI server on port 8000...
+2025-09-24T18:24:38.849577328Z Traceback (most recent call last):
+2025-09-24T18:24:38.849610140Z   File "/tmp/8ddfb9770c8be35/antenv/bin/uvicorn", line 8, in <module>
+2025-09-24T18:24:38.849615920Z     sys.exit(main())
+2025-09-24T18:24:38.849619978Z              ^^^^^^
+2025-09-24T18:24:38.849623475Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/click/core.py", line 1462, in __call__
+2025-09-24T18:24:38.850100297Z     return self.main(*args, **kwargs)
+2025-09-24T18:24:38.850110005Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.850114934Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/click/core.py", line 1383, in main
+2025-09-24T18:24:38.850620911Z     rv = self.invoke(ctx)
+2025-09-24T18:24:38.850629347Z          ^^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.851050966Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/click/core.py", line 1246, in invoke
+2025-09-24T18:24:38.851059512Z     return ctx.invoke(self.callback, **ctx.params)
+2025-09-24T18:24:38.851063659Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.851068178Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/click/core.py", line 814, in invoke
+2025-09-24T18:24:38.851153537Z     return callback(*args, **kwargs)
+2025-09-24T18:24:38.851160611Z            ^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.851164959Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/uvicorn/main.py", line 423, in main
+2025-09-24T18:24:38.851169738Z     run(
+2025-09-24T18:24:38.851174036Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/uvicorn/main.py", line 593, in run
+2025-09-24T18:24:38.851178114Z     server.run()
+2025-09-24T18:24:38.851182201Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/uvicorn/server.py", line 67, in run
+2025-09-24T18:24:38.852254034Z     return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+2025-09-24T18:24:38.852267239Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.852271587Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/uvicorn/_compat.py", line 23, in asyncio_run
+2025-09-24T18:24:38.852275805Z     return runner.run(main)
+2025-09-24T18:24:38.852279442Z            ^^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.852283249Z   File "/opt/python/3.11.13/lib/python3.11/asyncio/runners.py", line 118, in run
+2025-09-24T18:24:38.852287086Z     return self._loop.run_until_complete(task)
+2025-09-24T18:24:38.852290923Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.852294570Z   File "/opt/python/3.11.13/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+2025-09-24T18:24:38.852992027Z     return future.result()
+2025-09-24T18:24:38.853001455Z            ^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.853005994Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/uvicorn/server.py", line 71, in serve
+2025-09-24T18:24:38.853104157Z     await self._serve(sockets)
+2025-09-24T18:24:38.853111150Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/uvicorn/server.py", line 78, in _serve
+2025-09-24T18:24:38.853124665Z     config.load()
+2025-09-24T18:24:38.853128743Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/uvicorn/config.py", line 438, in load
+2025-09-24T18:24:38.853418675Z     self.loaded_app = import_from_string(self.app)
+2025-09-24T18:24:38.853426350Z                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.853430638Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/uvicorn/importer.py", line 22, in import_from_string
+2025-09-24T18:24:38.853435277Z     raise exc from None
+2025-09-24T18:24:38.853439605Z   File "/tmp/8ddfb9770c8be35/antenv/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2025-09-24T18:24:38.853654827Z     module = importlib.import_module(module_str)
+2025-09-24T18:24:38.853663994Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.853668032Z   File "/opt/python/3.11.13/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2025-09-24T18:24:38.854673611Z     return _bootstrap._gcd_import(name[level:], package, level)
+2025-09-24T18:24:38.854681486Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-09-24T18:24:38.854685654Z   File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2025-09-24T18:24:38.854689881Z   File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2025-09-24T18:24:38.854694540Z   File "<frozen importlib._bootstrap>", line 1126, in _find_and_load_unlocked
+2025-09-24T18:24:38.854698748Z   File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2025-09-24T18:24:38.854702696Z   File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2025-09-24T18:24:38.854706773Z   File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2025-09-24T18:24:38.854710651Z   File "<frozen importlib._bootstrap>", line 1140, in _find_and_load_unlocked
+2025-09-24T18:24:38.854714508Z ModuleNotFoundError: No module named 'app'

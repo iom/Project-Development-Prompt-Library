@@ -68,5 +68,5 @@ except Exception as e:
 
 # Start the FastAPI application
 echo "Starting uvicorn server..."
-exec python -m uvicorn Project-Development-Prompt-Library.Project-Development-Prompt-Library.app.main:app --host 0.0.0.0 --port $PORT
+exec python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
 

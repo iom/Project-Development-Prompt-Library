@@ -90,9 +90,25 @@ try:
     print('✓ Database initialization complete')
 except Exception as e:
     print(f'Database initialization error: {e}')
-    # Continue anyway, app will handle it
+    print('Skipping database initialization - app will handle it on startup')
 "
 
 # Start the application
 echo "Starting FastAPI server on port $PORT..."
-exec uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+echo "Working directory: $(pwd)"
+echo "Python path: $PYTHONPATH"
+
+# Try different approaches to start the app
+if [ -f "app/main.py" ]; then
+    echo "Starting with app.main:app..."
+    exec uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+elif [ -f "/home/site/wwwroot/app/main.py" ]; then
+    echo "Starting with full path reference..."
+    cd /home/site/wwwroot
+    exec python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+else
+    echo "ERROR: Cannot find app/main.py"
+    ls -la
+    ls -la app/ 2>/dev/null || echo "app directory not found"
+    exit 1
+fi

@@ -27,26 +27,11 @@ stages:
     - script: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-      displayName: 'Install dependencies'
+      displayName: 'Install Python dependencies'
       workingDirectory: '$(workingDirectory)'
 
     - script: |
-        # Create requirements.txt from pyproject.toml if it doesn't exist
-        if [ ! -f requirements.txt ]; then
-          python -c "
-import toml
-data = toml.load('pyproject.toml')
-deps = data['project']['dependencies']
-with open('requirements.txt', 'w') as f:
-    for dep in deps:
-        f.write(dep + '\n')
-          "
-        fi
-      displayName: 'Generate requirements.txt'
-      workingDirectory: '$(workingDirectory)'
-
-    - script: |
-        # Run database migrations and setup
+        # Initialize database
         python -c "
 from app.database import engine
 from app.models import *
@@ -63,6 +48,12 @@ SQLModel.metadata.create_all(engine)
         archiveType: 'zip'
         archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
         replaceExistingArchive: true
+        excludePaths: |
+          node_modules/**
+          .git/**
+          __pycache__/**
+          *.pyc
+          .env
       displayName: 'Archive application files'
 
     - task: PublishBuildArtifacts@1
@@ -72,7 +63,7 @@ SQLModel.metadata.create_all(engine)
       displayName: 'Publish build artifacts'
 
 - stage: Deploy
-  displayName: 'Deploy to Azure Static Web Apps'
+  displayName: 'Deploy to Azure App Service'
   dependsOn: Build
   condition: succeeded()
   jobs:
@@ -83,15 +74,17 @@ SQLModel.metadata.create_all(engine)
       runOnce:
         deploy:
           steps:
-          - task: AzureStaticWebApp@0
+          - task: AzureWebApp@1
             inputs:
-              app_location: '/'
-              api_location: 'app'
-              output_location: ''
-              azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APPS_API_TOKEN)'
-            displayName: 'Deploy to Azure Static Web Apps'
+              azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
+              appType: 'webAppLinux'
+              appName: '$(AZURE_APP_NAME)'
+              package: '$(Pipeline.Workspace)/drop/app.zip'
+              runtimeStack: 'PYTHON|3.11'
+              startUpCommand: 'uvicorn app.main:app --host 0.0.0.0 --port 8000'
+            displayName: 'Deploy to Azure App Service'
 
           - script: |
               echo "Application deployed successfully!"
-              echo "Your FastAPI app should be available at your Azure Static Web App URL"
+              echo "Your FastAPI app should be available at https://$(AZURE_APP_NAME).azurewebsites.net"
             displayName: 'Deployment confirmation'

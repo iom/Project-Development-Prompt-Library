@@ -47,7 +47,7 @@ def create_db_and_tables():
         _run_migrations()
         
         # Check if database is empty and load seed data
-    from sqlmodel import Session, select
+        from sqlmodel import Session, select
     from sqlalchemy import func
     from app.models import Category, Prompt
     import json

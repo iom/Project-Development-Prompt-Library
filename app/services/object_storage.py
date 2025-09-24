@@ -19,8 +19,10 @@ class ObjectStorageService:
         public_paths_str = os.getenv("PUBLIC_OBJECT_SEARCH_PATHS", "")
         self.public_paths = [path.strip() for path in public_paths_str.split(",") if path.strip()]
         
-        if not self.bucket_id:
-            raise ValueError("DEFAULT_OBJECT_STORAGE_BUCKET_ID environment variable not set")
+        # For Azure deployment, object storage is optional
+        self.is_enabled = bool(self.bucket_id)
+        if not self.is_enabled:
+            print("Object storage not configured - file upload features will be disabled")
         
         # We'll use the Replit sidecar endpoint directly instead of GCS client
     
@@ -110,6 +112,11 @@ class ObjectStorageService:
         Returns:
             Dict containing upload URL, file path, and metadata
         """
+        if not self.is_enabled:
+            raise HTTPException(
+                status_code=503,
+                detail="File upload is not available - object storage not configured"
+            )
         # Generate unique filename to avoid conflicts
         file_extension = os.path.splitext(filename)[1]
         unique_filename = f"{uuid.uuid4().hex}{file_extension}"
@@ -170,6 +177,11 @@ class ObjectStorageService:
         Returns:
             Presigned download URL
         """
+        if not self.is_enabled:
+            raise HTTPException(
+                status_code=503,
+                detail="File download is not available - object storage not configured"
+            )
         try:
             # Generate presigned download URL using Replit sidecar
             download_url = self._sign_object_url(

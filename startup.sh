@@ -1,4 +1,3 @@
-
 #!/bin/bash
 # Azure App Service startup script
 echo "Starting FastAPI application on Azure..."
@@ -144,16 +143,31 @@ elif [ -f "./main.py" ]; then
     export PYTHONPATH="$(pwd):$PYTHONPATH"
     exec python -m uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1
 else
-    echo "✗ Cannot locate FastAPI application using any strategy"
+    echo "✗ CRITICAL: No application files found in Azure deployment!"
     echo ""
-    echo "=== Final Debug Information ==="
-    echo "All directories:"
-    find . -type d 2>/dev/null | head -20
+    echo "=== Deployment Verification Failed ==="
+    echo "Working directory: $(pwd)"
+    echo "Directory contents:"
+    ls -la . 2>/dev/null || echo "Cannot list directory contents"
     echo ""
-    echo "All Python files:"
-    find . -name "*.py" -type f 2>/dev/null | head -20
+    echo "Available directories:"
+    find . -type d 2>/dev/null | head -10 || echo "No directories found"
     echo ""
-    echo "Complete directory tree:"
-    ls -laR . 2>/dev/null | head -50
+    echo "Available Python files:"
+    find . -name "*.py" -type f 2>/dev/null | head -10 || echo "No Python files found"
+    echo ""
+    echo "Environment variables:"
+    echo "  HOME: $HOME"
+    echo "  PORT: $PORT"
+    echo "  PYTHONPATH: $PYTHONPATH"
+    echo ""
+    echo "This indicates the GitHub Actions deployment did not properly transfer files."
+    echo "Check the GitHub Actions workflow and Azure App Service deployment logs."
+    echo ""
+    echo "Expected file structure:"
+    echo "  /home/site/wwwroot/app/main.py"
+    echo "  /home/site/wwwroot/requirements.txt"
+    echo "  /home/site/wwwroot/startup.sh"
+    echo ""
     exit 1
 fi

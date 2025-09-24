@@ -29,6 +29,18 @@ jobs:
           python -m venv venv
           source venv/bin/activate
       
+      - name: Generate requirements.txt from pyproject.toml
+        run: |
+          pip install toml
+          python -c "
+import toml
+data = toml.load('pyproject.toml')
+deps = data['project']['dependencies']
+with open('requirements.txt', 'w') as f:
+    for dep in deps:
+        f.write(dep + '\n')
+          "
+
       - name: Install dependencies
         run: pip install -r requirements.txt
         

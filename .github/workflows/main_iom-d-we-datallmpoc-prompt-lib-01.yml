@@ -33,12 +33,12 @@ jobs:
         run: |
           pip install toml
           python -c "
-import toml
-data = toml.load('pyproject.toml')
-deps = data['project']['dependencies']
-with open('requirements.txt', 'w') as f:
-    for dep in deps:
-        f.write(dep + '\n')
+          import toml
+          data = toml.load('pyproject.toml')
+          deps = data['project']['dependencies']
+          with open('requirements.txt', 'w') as f:
+              for dep in deps:
+                  f.write(dep + '\n')
           "
 
       - name: Install dependencies

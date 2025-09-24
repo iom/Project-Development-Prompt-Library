@@ -1,103 +1,109 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
+          name: Build and deploy Python app to Azure Web App - iom-d-we-datallmpoc-prompt-lib-01
 
-name: Build and deploy Python app to Azure Web App - iom-d-we-datallmpoc-prompt-lib-01
+          on:
+            push:
+              branches:
+                - main
+            workflow_dispatch:
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+          jobs:
+            build:
+              runs-on: ubuntu-latest
+              permissions:
+                contents: read
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read #This is required for actions/checkout
+              steps:
+                - uses: actions/checkout@v4
 
-    steps:
-      - uses: actions/checkout@v4
+                - name: Set up Python
+                  uses: actions/setup-python@v5
+                  with:
+                    python-version: '3.11'
 
-      - name: Set up Python version
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Create and start virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-      
-      - name: Ensure requirements.txt exists
-        run: |
-          # Use existing requirements.txt if it exists, otherwise generate from pyproject.toml
-          if [ ! -f "requirements.txt" ]; then
-            echo "Generating requirements.txt from pyproject.toml..."
-            pip install toml
-            python -c "
-          import toml
+                # (Optional) Only needed to parse pyproject if requirements.txt missing
+                - name: Ensure requirements.txt exists
+                  run: |
+                    set -e
+                    if [ ! -f "requirements.txt" ]; then
+                      if [ -f "pyproject.toml" ]; then
+                        echo "Generating requirements.txt from pyproject.toml..."
+                        python -m pip install --upgrade pip
+                        pip install toml
+                        python - <<'PY'
+          import toml, sys
           data = toml.load('pyproject.toml')
-          deps = data['project']['dependencies']
+          deps = data.get('project', {}).get('dependencies', [])
           with open('requirements.txt', 'w') as f:
               for dep in deps:
                   f.write(dep + '\n')
-          "
-          else
-            echo "Using existing requirements.txt"
-          fi
-          
-          # Verify requirements.txt contains azure packages
-          if ! grep -q "azure-storage-blob" requirements.txt; then
-            echo "azure-storage-blob>=12.19.0" >> requirements.txt
-          fi
-          if ! grep -q "azure-core" requirements.txt; then
-            echo "azure-core>=1.30.0" >> requirements.txt
-          fi
+          print("Wrote requirements.txt with", len(deps), "deps")
+          PY
+                      else
+                        echo "ERROR: Neither requirements.txt nor pyproject.toml found." >&2
+                        exit 1
+                      fi
+                    else
+                      echo "Using existing requirements.txt"
+                    fi
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+                    # Ensure Azure libs are present
+                    grep -q "^azure-storage-blob" requirements.txt || echo "azure-storage-blob>=12.19.0" >> requirements.txt
+                    grep -q "^azure-core" requirements.txt || echo "azure-core>=1.30.0" >> requirements.txt
 
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: |
-            app/
-            requirements.txt
-            startup.sh
-            seed/
-            pyproject.toml
-          retention-days: 30
+                # Install to verify lock/resolve (not deployed; helps catch issues early)
+                - name: Verify dependency resolution
+                  run: |
+                    python -m pip install --upgrade pip
+                    pip install -r requirements.txt
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-      
-      - name: Debug - List downloaded files
-        run: |
-          echo "=== Downloaded artifact contents ==="
-          ls -la
-          echo ""
-          echo "=== App directory contents ==="
-          ls -la app/ || echo "app directory not found"
-          echo ""
-          echo "=== Python files found ==="
-          find . -name "*.py" | head -10
-      
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
-        with:
-          app-name: 'iom-d-we-datallmpoc-prompt-lib-01'
-          slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5BF3B71B25AF441B8C3B893DC6954C68 }}
-          package: .
+                # Upload only what the app needs at runtime
+                - name: Upload artifact for deployment jobs
+                  uses: actions/upload-artifact@v4
+                  with:
+                    name: python-app
+                    path: |
+                      app/
+                      requirements.txt
+                      startup.sh
+                      seed/
+                      pyproject.toml
+                    retention-days: 30
+
+            deploy:
+              runs-on: ubuntu-latest
+              needs: build
+
+              steps:
+                - name: Download artifact from build job
+                  uses: actions/download-artifact@v4
+                  with:
+                    name: python-app
+                    # ✅ Critical: extract into repository root so "package: ." is the actual app root
+                    path: .
+
+                - name: Make startup.sh executable (if present)
+                  run: |
+                    if [ -f "startup.sh" ]; then
+                      chmod +x startup.sh
+                    fi
+
+                - name: Debug - List downloaded files
+                  run: |
+                    echo "=== PWD ==="
+                    pwd
+                    echo "=== Tree (top) ==="
+                    ls -la
+                    echo "=== App directory ==="
+                    ls -la app/ || echo "app directory not found"
+                    echo "=== Python files (sample) ==="
+                    find . -name "*.py" | head -10
+
+                - name: Deploy to Azure Web App
+                  uses: azure/webapps-deploy@v3
+                  id: deploy-to-webapp
+                  with:
+                    app-name: 'iom-d-we-datallmpoc-prompt-lib-01'
+                    slot-name: 'Production'
+                    publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5BF3B71B25AF441B8C3B893DC6954C68 }}
+                    # ✅ Deploy the current directory (now contains the artifact root)
+                    package: .

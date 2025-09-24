@@ -85,6 +85,17 @@ jobs:
         with:
           name: python-app
       
+      - name: Debug - List downloaded files
+        run: |
+          echo "=== Downloaded artifact contents ==="
+          ls -la
+          echo ""
+          echo "=== App directory contents ==="
+          ls -la app/ || echo "app directory not found"
+          echo ""
+          echo "=== Python files found ==="
+          find . -name "*.py" | head -10
+      
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp

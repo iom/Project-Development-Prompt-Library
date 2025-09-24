@@ -99,35 +99,61 @@ echo "Working directory: $(pwd)"
 echo "Python path: $PYTHONPATH"
 
 # Debug directory structure
-echo "=== Directory Structure Debug ==="
+echo "=== Comprehensive Directory Debug ==="
+echo "Current working directory: $(pwd)"
+echo "HOME: $HOME"
 echo "Root directory contents:"
-ls -la
-echo ""
-echo "App directory contents:"
-ls -la app/ 2>/dev/null || echo "app directory not found"
+ls -la /home/site/wwwroot/ 2>/dev/null || ls -la
 echo ""
 
 # Ensure we're in the right directory
-cd /home/site/wwwroot
+cd /home/site/wwwroot 2>/dev/null || cd /
 
-# Check if app/main.py exists
-if [ -f "app/main.py" ]; then
-    echo "✓ Found app/main.py"
-    echo "Starting FastAPI with: python -m uvicorn app.main:app"
+echo "After CD - Current directory: $(pwd)"
+echo "Contents:"
+ls -la
+echo ""
+
+# Look for app directory and main.py
+echo "Searching for app directory and main.py..."
+find . -name "app" -type d 2>/dev/null || echo "No app directory found"
+find . -name "main.py" -type f 2>/dev/null || echo "No main.py files found"
+echo ""
+
+# Check specific paths
+echo "Checking specific file paths:"
+echo "- ./app/main.py: $([ -f './app/main.py' ] && echo 'EXISTS' || echo 'NOT FOUND')"
+echo "- /home/site/wwwroot/app/main.py: $([ -f '/home/site/wwwroot/app/main.py' ] && echo 'EXISTS' || echo 'NOT FOUND')"
+echo "- ./main.py: $([ -f './main.py' ] && echo 'EXISTS' || echo 'NOT FOUND')"
+echo ""
+
+# Try to start the application with multiple strategies
+if [ -f "./app/main.py" ]; then
+    echo "✓ Found ./app/main.py - Strategy 1: Direct path"
+    export PYTHONPATH="$(pwd):$(pwd)/app:$PYTHONPATH"
+    echo "Updated PYTHONPATH: $PYTHONPATH"
     exec python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+elif [ -f "/home/site/wwwroot/app/main.py" ]; then
+    echo "✓ Found /home/site/wwwroot/app/main.py - Strategy 2: Full path"
+    cd /home/site/wwwroot
+    export PYTHONPATH="/home/site/wwwroot:/home/site/wwwroot/app:$PYTHONPATH"
+    echo "Updated PYTHONPATH: $PYTHONPATH"
+    exec python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+elif [ -f "./main.py" ]; then
+    echo "✓ Found ./main.py in root - Strategy 3: Root level"
+    export PYTHONPATH="$(pwd):$PYTHONPATH"
+    exec python -m uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1
 else
-    echo "✗ app/main.py not found"
-    echo "Attempting to locate main.py..."
-    find /home/site/wwwroot -name "main.py" -type f 2>/dev/null || echo "No main.py files found"
-    
-    # Try alternative locations
-    if [ -f "main.py" ]; then
-        echo "Found main.py in root, starting directly"
-        exec python -m uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1
-    else
-        echo "ERROR: Cannot locate FastAPI application"
-        echo "Available Python files:"
-        find /home/site/wwwroot -name "*.py" -type f 2>/dev/null || echo "No Python files found"
-        exit 1
-    fi
+    echo "✗ Cannot locate FastAPI application using any strategy"
+    echo ""
+    echo "=== Final Debug Information ==="
+    echo "All directories:"
+    find . -type d 2>/dev/null | head -20
+    echo ""
+    echo "All Python files:"
+    find . -name "*.py" -type f 2>/dev/null | head -20
+    echo ""
+    echo "Complete directory tree:"
+    ls -laR . 2>/dev/null | head -50
+    exit 1
 fi

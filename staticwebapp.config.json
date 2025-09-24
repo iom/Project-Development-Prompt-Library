@@ -1,0 +1,19 @@
+
+{
+  "platform": {
+    "apiRuntime": "python:3.11"
+  },
+  "routes": [
+    {
+      "route": "/api/*",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/secure-admin-2024/*",
+      "allowedRoles": ["authenticated"]
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/api/index"
+  }
+}

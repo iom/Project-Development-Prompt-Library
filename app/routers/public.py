@@ -10,9 +10,15 @@ import json
 import requests
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
+from pathlib import Path
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter(tags=["public"])
-templates = Jinja2Templates(directory="app/templates")
+#templates = Jinja2Templates(directory="app/templates")
+BASE_DIR = Path(__file__).resolve().parents[1]  # .../app
+TEMPLATE_DIR = BASE_DIR / "templates"           # .../app/templates
+
+templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 
 @router.get("/api/prompts")
 def list_prompts(

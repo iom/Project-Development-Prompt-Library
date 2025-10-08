@@ -8,7 +8,7 @@
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
             <h2 class="text-lg font-medium text-gray-900 mb-6">Categories</h2>
-            
+
             <div class="space-y-4">
                 {% for category in categories %}
                 <div class="border border-gray-200 rounded-lg p-4">
@@ -20,24 +20,39 @@
                                 <i class="fas fa-file-text mr-1"></i>
                                 {{ category_counts.get(category.id, 0) }} prompts
                             </p>
+                            {% if category.parent_id %}
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-folder-tree mr-1"></i>
+                                Parent:
+                                {% set parent = categories | selectattr("id", "equalto", category.parent_id) | list |
+                                first %}
+                                {{ parent.name if parent else "Unknown" }}
+                            </p>
+                            {% else %}
+                            <p class="text-xs text-gray-400 mt-1">
+                                <i class="fas fa-folder-open mr-1"></i>
+                                Main Category
+                            </p>
+                            {% endif %}
                         </div>
                         <div class="flex space-x-2 ml-4">
                             <!-- Order Controls -->
                             <div class="flex flex-col space-y-1">
                                 <button onclick="moveCategory({{ category.id }}, 'up')"
-                                        class="text-gray-500 hover:text-gray-700 text-xs py-1 px-2 rounded border border-gray-300 hover:bg-gray-50"
-                                        title="Move Up">
+                                    class="text-gray-500 hover:text-gray-700 text-xs py-1 px-2 rounded border border-gray-300 hover:bg-gray-50"
+                                    title="Move Up">
                                     <i class="fas fa-chevron-up"></i>
                                 </button>
                                 <button onclick="moveCategory({{ category.id }}, 'down')"
-                                        class="text-gray-500 hover:text-gray-700 text-xs py-1 px-2 rounded border border-gray-300 hover:bg-gray-50"
-                                        title="Move Down">
+                                    class="text-gray-500 hover:text-gray-700 text-xs py-1 px-2 rounded border border-gray-300 hover:bg-gray-50"
+                                    title="Move Down">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
                             </div>
                             <!-- Edit Button -->
-                            <button onclick="editCategory({{ category.id }}, '{{ category.name }}', '{{ category.description }}')" 
-                                    class="text-blue-600 hover:text-blue-900 text-sm">
+                            <button
+                                onclick="editCategory({{ category.id }}, '{{ category.name }}', '{{ category.description }}', '{{ category.parent_id }}')"
+                                class="text-blue-600 hover:text-blue-900 text-sm">
                                 Edit
                             </button>
                         </div>
@@ -52,32 +67,66 @@
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
             <h2 class="text-lg font-medium text-gray-900 mb-6">Add New Category</h2>
-            
-            <form method="POST" action="/secure-admin-2024/api/categories" class="space-y-4">
+
+            <form id="addCategoryForm" class="space-y-4">
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Category Name</label>
-                    <input type="text" 
-                           name="name" 
-                           id="name" 
-                           required
-                           placeholder="e.g., Research, Solutions, etc."
-                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <input type="text" name="name" id="name" required placeholder="e.g., Research, Solutions, etc."
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
 
                 <div>
                     <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea name="description" 
-                              id="description" 
-                              rows="3"
-                              placeholder="Brief description of this category..."
-                              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    <textarea name="description" id="description" rows="3"
+                        placeholder="Brief description of this category..."
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
 
-                <button type="submit" 
-                        class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                <div>
+                    <label for="parent_id" class="block text-sm font-medium text-gray-700">Parent Category</label>
+                    <select name="parent_id" id="parent_id"
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">None (Main Category)</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                     <i class="fas fa-plus mr-2"></i>Add Category
                 </button>
             </form>
+
+            <div id="categorySuccess" class="fixed bottom-6 right-6 z-50 hidden transition-opacity duration-500">
+                <div
+                    class="flex items-center bg-green-500 text-white text-sm font-semibold px-6 py-3 rounded shadow-lg">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Category added successfully!
+                    <button onclick="hideCategorySuccess()"
+                        class="ml-4 text-white hover:text-gray-200 focus:outline-none">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="categoryEditSuccess" class="fixed bottom-6 right-6 z-50 hidden transition-opacity duration-500">
+                <div class="flex items-center bg-blue-500 text-white text-sm font-semibold px-6 py-3 rounded shadow-lg">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Category updated successfully!
+                    <button onclick="hideCategoryEditSuccess()"
+                        class="ml-4 text-white hover:text-gray-200 focus:outline-none">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -86,33 +135,39 @@
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Category</h3>
-        
+
         <form id="editForm" class="space-y-4">
             <input type="hidden" id="editCategoryId">
-            
+
             <div>
                 <label for="editName" class="block text-sm font-medium text-gray-700">Category Name</label>
-                <input type="text" 
-                       id="editName" 
-                       required
-                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <input type="text" id="editName" required
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <div>
                 <label for="editDescription" class="block text-sm font-medium text-gray-700">Description</label>
-                <textarea id="editDescription" 
-                          rows="3"
-                          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                <textarea id="editDescription" rows="3"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+
+            <div>
+                <label for="editParentId" class="block text-sm font-medium text-gray-700">Parent Category</label>
+                <select id="editParentId"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">None (Main Category)</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
 
             <div class="flex justify-end space-x-3">
-                <button type="button" 
-                        onclick="closeEditModal()"
-                        class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">
+                <button type="button" onclick="closeEditModal()"
+                    class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">
                     Cancel
                 </button>
-                <button type="submit" 
-                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                     Update Category
                 </button>
             </div>
@@ -121,69 +176,139 @@
 </div>
 
 <script>
-function editCategory(id, name, description) {
-    document.getElementById('editCategoryId').value = id;
-    document.getElementById('editName').value = name;
-    document.getElementById('editDescription').value = description;
-    document.getElementById('editModal').classList.remove('hidden');
-    document.getElementById('editModal').classList.add('flex');
-}
+    function editCategory(id, name, description, parent_id) {
+        document.getElementById('editCategoryId').value = id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editDescription').value = description;
+        document.getElementById('editModal').classList.remove('hidden');
+        document.getElementById('editModal').classList.add('flex');
+        // Set parent_id dropdown
+        const parentSelect = document.getElementById('editParentId');
+        for (let i = 0; i < parentSelect.options.length; i++) {
+            if (parentSelect.options[i].value == parent_id) {
+                parentSelect.selectedIndex = i;
+                break;
+            }
+            if (parent_id === "" || parent_id === null || parent_id === "None") {
+                parentSelect.selectedIndex = 0;
+            }
+        }
+    }
 
-function closeEditModal() {
-    document.getElementById('editModal').classList.add('hidden');
-    document.getElementById('editModal').classList.remove('flex');
-}
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+        document.getElementById('editModal').classList.remove('flex');
+    }
 
-document.getElementById('editForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const id = document.getElementById('editCategoryId').value;
-    const name = document.getElementById('editName').value;
-    const description = document.getElementById('editDescription').value;
-    
-    try {
-        const formData = new FormData();
-        formData.append('name', name);
-        formData.append('description', description);
-        
-        const response = await fetch(`/secure-admin-2024/api/categories/${id}`, {
-            method: 'PATCH',
-            body: formData
-        });
-        
-        if (response.ok) {
-            location.reload();
-        } else {
+    document.getElementById('editForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const id = document.getElementById('editCategoryId').value;
+        const name = document.getElementById('editName').value;
+        const description = document.getElementById('editDescription').value;
+        const parent_id = document.getElementById('editParentId').value;
+
+        try {
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('description', description);
+            formData.append('parent_id', parent_id);
+
+            const response = await fetch(`/secure-admin-2024/api/categories/${id}`, {
+                method: 'PATCH',
+                body: formData
+            });
+
+            if (response.ok) {
+                closeEditModal();
+                showCategoryEditSuccess();
+                setTimeout(() => location.reload(), 1200);
+            } else {
+                alert('Error updating category');
+            }
+        } catch (error) {
             alert('Error updating category');
         }
-    } catch (error) {
-        alert('Error updating category');
-    }
-});
+    });
 
-// Category ordering functions
-async function moveCategory(categoryId, direction) {
-    try {
-        const response = await fetch(`/secure-admin-2024/api/categories/${categoryId}/move-${direction}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
+    document.getElementById('addCategoryForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('/secure-admin-2024/api/categories', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            if (response.ok) {
+                showCategorySuccess();
+                setTimeout(() => location.reload(), 1200);
+            } else {
+                const result = await response.json();
+                alert(result.detail || 'Error adding category');
             }
-        });
-        
-        if (response.ok) {
-            location.reload(); // Refresh to show new order
-        } else {
-            const result = await response.json();
-            if (result.message && result.message.includes('already at')) {
-                // Silent handling for "already at top/bottom" messages
-                return;
+        } catch (error) {
+            alert('Network error');
+        }
+    });
+
+    // Category ordering functions
+    async function moveCategory(categoryId, direction) {
+        try {
+            const response = await fetch(`/secure-admin-2024/api/categories/${categoryId}/move-${direction}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                location.reload(); // Refresh to show new order
+            } else {
+                const result = await response.json();
+                if (result.message && result.message.includes('already at')) {
+                    // Silent handling for "already at top/bottom" messages
+                    return;
+                }
+                alert('Error moving category');
             }
+        } catch (error) {
             alert('Error moving category');
         }
-    } catch (error) {
-        alert('Error moving category');
     }
-}
+
+    function showCategorySuccess() {
+        const toast = document.getElementById('categorySuccess');
+        toast.classList.remove('hidden');
+        toast.classList.add('opacity-100');
+        setTimeout(() => {
+            hideCategorySuccess();
+        }, 1500);
+    }
+
+    function hideCategorySuccess() {
+        const toast = document.getElementById('categorySuccess');
+        toast.classList.add('hidden');
+        toast.classList.remove('opacity-100');
+    }
+
+    function showCategoryEditSuccess() {
+        const toast = document.getElementById('categoryEditSuccess');
+        toast.classList.remove('hidden');
+        toast.classList.add('opacity-100');
+        setTimeout(() => {
+            hideCategoryEditSuccess();
+        }, 1500);
+    }
+
+    function hideCategoryEditSuccess() {
+        const toast = document.getElementById('categoryEditSuccess');
+        toast.classList.add('hidden');
+        toast.classList.remove('opacity-100');
+    }
 </script>
 {% endblock %}

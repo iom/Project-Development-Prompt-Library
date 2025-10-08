@@ -143,7 +143,6 @@ def create_db_and_tables():
 def _run_migrations():
     """Run database migrations"""
     from sqlmodel import Session, text
-    import sqlite3
 
     try:
         with Session(engine) as session:
@@ -151,7 +150,7 @@ def _run_migrations():
             result = session.exec(text("PRAGMA table_info(promptsubmission)")).all()
             columns = {row[1]: row for row in result}  # {column_name: (cid, name, type, notnull, default, pk)}
 
-            # Migration 1: Add suggested_category_name column if missing
+            # Migration 1: Add suggested_category_name column to promptsubmission table if missing
             if 'suggested_category_name' not in columns:
                 print("Adding suggested_category_name column to promptsubmission table...")
                 session.exec(text("ALTER TABLE promptsubmission ADD COLUMN suggested_category_name TEXT"))
@@ -222,10 +221,75 @@ def _run_migrations():
             else:
                 print("Database schema is up to date")
 
-    except Exception as e:
-        print(f"Migration warning: {e}")
-        # Don't fail startup if migration has issues
+            
+            # Migration 4: Add liked_count column to prompt table if missing
+            prompt_result = session.exec(text("PRAGMA table_info(prompt)")).all()
+            prompt_columns = {row[1]: row for row in prompt_result}
+            if 'liked_count' not in prompt_columns:
+                print("Adding liked_count column to prompt table...")
+                session.exec(text("ALTER TABLE prompt ADD COLUMN liked_count INTEGER DEFAULT 0 NOT NULL"))
+                session.commit()
+                print("Migration completed: liked_count column added to prompt table")
 
-@app.get("/")
-async def root(request: Request):
-    return templates.TemplateResponse("library.html", {"request": request})
+            # Migration: Add user management columns if missing
+            # 1. Add username column to user table
+            user_result = session.exec(text("PRAGMA table_info(user)")).all()
+            user_columns = {row[1]: row for row in user_result}
+            if 'username' not in user_columns:
+                print("Adding username column to user table...")
+                session.exec(text("ALTER TABLE user ADD COLUMN username TEXT"))
+                session.commit()
+                print("Migration completed: username column added to user table")
+            # 2. Add email column to user table
+            if 'email' not in user_columns:
+                print("Adding email column to user table...")
+                session.exec(text("ALTER TABLE user ADD COLUMN email TEXT"))
+                session.commit()
+                print("Migration completed: email column added to user table")
+            # 3. Add role_id column to user table
+            if 'role_id' not in user_columns:
+                print("Adding role_id column to user table...")
+                session.exec(text("ALTER TABLE user ADD COLUMN role_id INTEGER"))
+                session.commit()
+                print("Migration completed: role_id column added to user table")
+            # 4. Create userrole table if missing
+            userrole_result = session.exec(text("SELECT name FROM sqlite_master WHERE type='table' AND name='userrole'")).first()
+            if not userrole_result:
+                print("Creating userrole table...")
+                session.exec(text("""
+                    CREATE TABLE userrole (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL
+                    )
+                """))
+                session.commit()
+                print("Migration completed: userrole table created")
+            # Migration: Make password_hash nullable in user table if needed
+            user_result = session.exec(text("PRAGMA table_info(user)")).all()
+            user_columns = {row[1]: row for row in user_result}
+            if 'password_hash' in user_columns:
+                # Check if password_hash is NOT NULL
+                if user_columns['password_hash'][3] == 1:  # notnull == 1
+                    print("Fixing password_hash column to allow NULL values...")
+                    # SQLite can't ALTER COLUMN directly, so recreate the table
+                    session.exec(text("""
+                        CREATE TABLE user_temp (
+                            id INTEGER PRIMARY KEY,
+                            username TEXT,
+                            email TEXT,
+                            role_id INTEGER,
+                            password_hash TEXT,
+                            FOREIGN KEY (role_id) REFERENCES userrole(id)
+                        );
+                    """))
+                    # Copy existing data
+                    session.exec(text("""
+                        INSERT INTO user_temp (id, username, email, role_id, password_hash)
+                        SELECT id, username, email, role_id, password_hash FROM user;
+                    """))
+                    session.exec(text("DROP TABLE user;"))
+                    session.exec(text("ALTER TABLE user_temp RENAME TO user;"))
+                    session.commit()
+                    print("Migration completed: password_hash now allows NULL values")
+    except Exception as e:
+        print(f"Migration error: {e}")

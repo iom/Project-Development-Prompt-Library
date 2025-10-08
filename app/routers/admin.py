@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import select
 from sqlalchemy import func
 from app.database import SessionDep
-from app.models import PromptSubmission, Prompt, Category, AuditLog, PromptDocument
+from app.models import PromptSubmission, Prompt, Category, AuditLog, PromptDocument, User, UserRole
 from app.services.object_storage import object_storage_service
 from datetime import datetime
 from typing import Optional, List
@@ -239,31 +239,37 @@ def create_category(
     admin=Depends(admin_required),
     name: str = Form(...),
     description: str = Form(""),
-    parent_id: int = Form(None)
+    parent_id: str = Form("")  # Accept as string
 ):
     """Create a new category"""
     from slugify import slugify
-    
+
+    # Convert empty string to None, otherwise to int
+    if parent_id == "" or parent_id is None:
+        parent_id_int = None
+    else:
+        parent_id_int = int(parent_id)
+
     # Get the highest sort_order and add 1 for new category (appears at end)
     max_sort_order = session.exec(
         select(func.max(Category.sort_order))
     ).first()
     next_sort_order = (max_sort_order or 0) + 1
-    
+
     category = Category(
         name=name,
         slug=slugify(name),
         description=description,
-        parent_id=parent_id,
+        parent_id=parent_id_int,
         sort_order=next_sort_order
     )
     session.add(category)
     session.commit()
-    
+
     # Redirect back to categories page for HTML form submission
     if "text/html" in request.headers.get("accept", ""):
         return RedirectResponse(url="/secure-admin-2024/categories", status_code=303)
-    
+
     return {"message": "Category created successfully", "id": category.id}
 
 @router.get("/")
@@ -528,23 +534,29 @@ async def update_category(
     session: SessionDep,
     admin=Depends(admin_required),
     name: str = Form(...),
-    description: str = Form("")
+    description: str = Form(""),
+    parent_id: Optional[int] = Form(None)  # <-- Accept None
 ):
     """Update a category"""
     from slugify import slugify
-    
+
+    # Convert empty string to None
+    if parent_id == "":
+        parent_id = None
+
     category = session.get(Category, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
-    
+
     category.name = name
     category.slug = slugify(name)
     category.description = description
     category.updated_at = datetime.utcnow()
-    
+    category.parent_id = parent_id
+
     session.add(category)
     session.commit()
-    
+
     return {"message": "Category updated successfully"}
 
 @router.patch("/api/categories/{category_id}/move-up")
@@ -808,3 +820,56 @@ async def delete_document(
         "message": "Document deleted successfully",
         "document_id": doc_id
     }
+
+# --- User Management Endpoints ---
+
+@router.get("/users", response_class=HTMLResponse)
+def admin_users_page(request: Request, session: SessionDep, admin=Depends(admin_required)):
+    users = session.exec(select(User)).all()
+    roles = session.exec(select(UserRole)).all()
+    return templates.TemplateResponse(
+        "admin/users.html",
+        {"request": request, "users": users, "roles": roles}
+    )
+
+@router.post("/api/users")
+def create_user(
+    request: Request,
+    session: SessionDep,
+    admin=Depends(admin_required),
+    username: str = Form(...),
+    email: str = Form(...),
+    role_id: int = Form(...),
+):
+    user = User(username=username, email=email, role_id=role_id)
+    session.add(user)
+    session.commit()
+    return {"message": "User created successfully", "id": user.id}
+
+@router.patch("/api/users/{user_id}")
+def update_user(
+    user_id: int,
+    session: SessionDep,
+    admin=Depends(admin_required),
+    username: str = Form(...),
+    email: str = Form(...),
+    role_id: int = Form(...),
+):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.username = username
+    user.email = email
+    user.role_id = role_id
+    session.add(user)
+    session.commit()
+    return {"message": "User updated successfully"}
+
+@router.delete("/api/users/{user_id}")
+def delete_user(user_id: int, session: SessionDep, admin=Depends(admin_required)):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    session.delete(user)
+    session.commit()
+    return {"message": "User deleted successfully"}

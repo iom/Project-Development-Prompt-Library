@@ -6,30 +6,50 @@
     <div class="w-1/4">
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold mb-4">Categories</h3>
-            <div id="categories" hx-get="/htmx/categories" hx-trigger="load">
+            <input type="hidden" id="currentCategory"
+                value="{{ selected_category if selected_category is not none else '' }}">
+
+            <div id="categories"
+                hx-get="/htmx/categories{% if selected_category is not none %}?selected={{ selected_category }}{% endif %}"
+                hx-trigger="load">
                 Loading categories...
             </div>
         </div>
-        
-        <!-- Disclaimer -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg shadow p-4 mt-4">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-exclamation-triangle text-blue-600"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-blue-800 mb-3">
-                        Be sure not to upload any sensitive information such as beneficiary data on AI platforms outside of CoPilot.
-                    </p>
-                    <a href="https://iomint.sharepoint.com/sites/ICTdept/SitePages/IOM-Guidelines-for-the-Ethical-and-Responsible-Use-of-Artificial-Intelligence.aspx?CT=1750840498786&OR=OWA-NT-Mail&CID=4eb0963a-8bcc-ef8a-c59d-f5e708b7df0a&csf=1&web=1&e=7E6WKT" 
-                       target="_blank" 
-                       class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-800 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <i class="fas fa-external-link-alt mr-2"></i>
-                        Consult IOM Guidelines for AI Use
-                    </a>
+
+
+        <!-- Disclaimer (sticky) -->
+        <aside class="sticky top-4 mt-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg shadow p-4">
+                <div class="flex items-start gap-3">
+                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                        <i class="fas fa-shield-alt text-blue-700"></i>
+                    </span>
+
+                    <div class="text-sm text-blue-900">
+                        <h4 class="font-semibold mb-1">Responsible use reminder</h4>
+                        <p class="mb-3">
+                            Use only approved, non-sensitive data with external AI tools. Do <span
+                                class="font-semibold">not</span> upload
+                            personal or beneficiary information, confidential documents, credentials, or API keys.
+                        </p>
+
+                        <ul class="list-disc pl-5 space-y-1 text-blue-900/90">
+                            <li>Handle protected content in <span class="font-medium">CoPilot</span> only.</li>
+                            <li>Remove identifiers before sharing examples or prompts.</li>
+                            <li>Follow your unit’s data classification policy.</li>
+                        </ul>
+
+                        <a href="https://iomint.sharepoint.com/sites/ICTdept/SitePages/IOM-Guidelines-for-the-Ethical-and-Responsible-Use-of-Artificial-Intelligence.aspx?CT=1750840498786&OR=OWA-NT-Mail&CID=4eb0963a-8bcc-ef8a-c59d-f5e708b7df0a&csf=1&web=1&e=7E6WKT"
+                            target="_blank"
+                            class="mt-3 inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-blue-800 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            IOM Guidelines for AI Use
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
+        </aside>
+
     </div>
 
     <!-- Main content -->
@@ -37,72 +57,77 @@
         <!-- Search bar -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <div class="flex gap-4">
-                <input 
-                    type="text" 
-                    id="searchQuery"
-                    placeholder="Search prompts..." 
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                <button 
-                    onclick="searchPrompts()" 
-                    class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
-                >
+                <input type="text" id="searchQuery" placeholder="Search prompts..."
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <button onclick="searchPrompts()" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">
                     Search
                 </button>
             </div>
         </div>
 
         <!-- Prompts list -->
-        <div id="promptsList" hx-get="/htmx/prompts" hx-trigger="load">
+        <div id="promptsList"
+            hx-get="/htmx/prompts{% if selected_category is not none %}?category={{ selected_category }}{% endif %}"
+            hx-trigger="load">
             Loading prompts...
         </div>
     </div>
 </div>
 
 <script>
-function searchPrompts() {
-    const query = document.getElementById('searchQuery').value;
-    const params = new URLSearchParams();
-    if (query) params.append('query', query);
-    
-    htmx.ajax('GET', `/htmx/prompts?${params.toString()}`, {target: '#promptsList'});
-}
-
-// Handle category selection
-function selectCategory(categoryId) {
-    const query = document.getElementById('searchQuery').value;
-    const params = new URLSearchParams();
-    if (query) params.append('query', query);
-    if (categoryId) params.append('category', categoryId);
-    
-    htmx.ajax('GET', `/htmx/prompts?${params.toString()}`, {target: '#promptsList'});
-}
-
-// Toggle prompt details
-function togglePromptDetails(promptId) {
-    const details = document.getElementById(`details-${promptId}`);
-    const preview = document.getElementById(`preview-${promptId}`);
-    const toggleText = document.getElementById(`toggle-text-${promptId}`);
-    
-    if (details.classList.contains('hidden')) {
-        details.classList.remove('hidden');
-        preview.classList.add('hidden');
-        toggleText.textContent = 'Hide Details';
-    } else {
-        details.classList.add('hidden');
-        preview.classList.remove('hidden');
-        toggleText.textContent = 'View Details';
+    function searchPrompts() {
+        const query = document.getElementById('searchQuery').value;
+        const currentCategory = document.getElementById('currentCategory')?.value || '';
+        const params = new URLSearchParams();
+        if (query) params.append('query', query);
+        if (currentCategory) params.append('category', currentCategory);
+        htmx.ajax('GET', `/htmx/prompts?${params.toString()}`, { target: '#promptsList' });
     }
-}
 
-// Copy prompt by ID
-function copyPrompt(promptId) {
-    fetch(`/api/prompts/${promptId}`)
-        .then(response => response.json())
-        .then(data => {
-            copyToClipboard(data.body);
-        })
-        .catch(error => console.error('Error fetching prompt:', error));
-}
+    // Handle category selection
+    function selectCategory(categoryId) {
+        const hidden = document.getElementById('currentCategory');
+        if (hidden) hidden.value = categoryId || '';
+
+        const query = document.getElementById('searchQuery').value;
+        const params = new URLSearchParams();
+        if (query) params.append('query', query);
+        if (categoryId) params.append('category', categoryId);
+
+        // Update prompts
+        htmx.ajax('GET', `/htmx/prompts?${params.toString()}`, { target: '#promptsList' });
+
+        // Update categories (highlight/expand)
+        const catParams = new URLSearchParams();
+        if (categoryId) catParams.append('selected', categoryId);
+        htmx.ajax('GET', `/htmx/categories?${catParams.toString()}`, { target: '#categories' });
+    }
+
+    // Toggle prompt details
+    function togglePromptDetails(promptId) {
+        const details = document.getElementById(`details-${promptId}`);
+        const preview = document.getElementById(`preview-${promptId}`);
+        const toggleText = document.getElementById(`toggle-text-${promptId}`);
+
+        if (details.classList.contains('hidden')) {
+            details.classList.remove('hidden');
+            preview.classList.add('hidden');
+            toggleText.textContent = 'Hide Details';
+        } else {
+            details.classList.add('hidden');
+            preview.classList.remove('hidden');
+            toggleText.textContent = 'View Details';
+        }
+    }
+
+    // Copy prompt by ID
+    function copyPrompt(promptId) {
+        fetch(`/api/prompts/${promptId}`)
+            .then(response => response.json())
+            .then(data => {
+                copyToClipboard(data.body);
+            })
+            .catch(error => console.error('Error fetching prompt:', error));
+    }
 </script>
 {% endblock %}

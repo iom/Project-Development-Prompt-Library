@@ -1,10 +1,64 @@
-<div class="space-y-2">
-    <button onclick="selectCategory('')" class="block w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm">
+<div class="space-y-3">
+    <!-- All Categories -->
+    <button onclick="selectCategory('')"
+        class="w-full text-left px-3 py-2 rounded-md text-sm
+           {{ 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' if not selected else 'hover:bg-gray-100 text-gray-700' }}">
         All Categories
     </button>
-    {% for category in categories %}
-    <button onclick="selectCategory({{ category.id }})" class="block w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm">
-        {{ category.name }}
-    </button>
+
+    {% macro render_tree(parent_id=None, level=0) %}
+    {% for cat in categories if cat.parent_id == parent_id %}
+    {% set children = (categories | selectattr('parent_id','equalto', cat.id) | list) %}
+    {% set count = counts.get(cat.id, 0) %}
+    {% set is_selected = (selected == cat.id) %}
+    {% set is_open = (cat.id in open_ids) or is_selected %}
+
+    <div class="ml-{{ level * 3 }}">
+        {% if children %}
+        <details class="group" {% if is_open %} open {% endif %}>
+            <summary class="flex items-center justify-between cursor-pointer px-2 py-2 rounded-md
+                            hover:bg-gray-50 {{ 'bg-blue-50' if is_selected else '' }}">
+                <div class="flex items-center gap-2">
+                    <!-- Chevron -->
+                    <svg class="h-4 w-4 text-gray-500 transition-transform group-open:rotate-90" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707A1 1 0 118.707 5.293l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                            clip-rule="evenodd" />
+                    </svg>
+
+                    <!-- Selectable label -->
+                    <button type="button" onclick="selectCategory({{ cat.id }})" class="text-left text-sm
+                         {{ 'text-blue-700 font-medium' if is_selected else 'text-gray-800 hover:text-blue-600' }}">
+                        {{ cat.name }}
+                    </button>
+                </div>
+
+                <span class="text-xs {{ 'text-blue-700 bg-blue-100' if is_selected else 'text-gray-700 bg-gray-100' }}
+                           rounded-full px-2 py-0.5">
+                    {{ count }}
+                </span>
+            </summary>
+
+            <div class="mt-1 space-y-1 ml-4">
+                {{ render_tree(cat.id, level + 1) }}
+            </div>
+        </details>
+        {% else %}
+        <!-- Leaf category -->
+        <button type="button" onclick="selectCategory({{ cat.id }})"
+            class="w-full flex items-center justify-between text-left px-3 py-2 rounded-md text-sm
+                   {{ 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' if is_selected else 'hover:bg-gray-100 text-gray-700' }}">
+            <span class="{{ 'font-medium' if is_selected else '' }}">{{ cat.name }}</span>
+            <span class="text-xs {{ 'text-blue-700 bg-blue-100' if is_selected else 'text-gray-700 bg-gray-100' }}
+                         rounded-full px-2 py-0.5">
+                {{ count }}
+            </span>
+        </button>
+        {% endif %}
+    </div>
     {% endfor %}
+    {% endmacro %}
+
+    {{ render_tree(None, 0) }}
 </div>

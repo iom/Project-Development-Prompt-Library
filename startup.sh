@@ -2,6 +2,10 @@
 
 set -e
 
+# If Oryx activates the venv, $VIRTUAL_ENV should be set.
+if [ -n "$VIRTUAL_ENV" ]; then
+  export PYTHONPATH="$VIRTUAL_ENV/lib/python3.11/site-packages:${PYTHONPATH}"
+fi
 # Set default port
 PORT=${PORT:-8000}
 
@@ -18,6 +22,8 @@ from app.database import engine
 SQLModel.metadata.create_all(engine)
 print('Database initialized')
 "
+
+
 
 # Start FastAPI application
 exec python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT

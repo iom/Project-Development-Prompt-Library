@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="mx-auto max-w-7xl p-6">
+    <!-- Header: title links back to /home -->
+    <header class="mb-6 grid gap-3 sm:flex sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight">
+                <a href="/" class="text-indigo-600 hover:underline">{{ parent.name }}</a>
+            </h1>
+            <p class="text-sm text-gray-500">
+                Browse sub-categories of <span class="font-medium text-gray-700">{{ parent.name }}</span> —
+                <span class="font-medium text-gray-700">{{ subcategories|length }}</span> total.
+            </p>
+        </div>
+
+        <!-- Search box -->
+        <label class="relative block">
+            <input id="cat-search" type="text" placeholder="Search sub-categories…"
+                class="w-64 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M12.9 14.32a7 7 0 111.414-1.414l3.39 3.39a1 1 0 01-1.414 1.414l-3.39-3.39zM14 9a5 5 0 11-10 0 5 5 0 0110 0z"
+                        clip-rule="evenodd" />
+                </svg>
+            </span>
+        </label>
+    </header>
+
+    <!-- Grid -->
+    <div id="cat-grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {% for c in subcategories %}
+        <a href="/library?category={{ c.id }}"
+            class="cat-card group relative flex min-h-[200px] flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            data-key="{{ c.slug }}" data-name="{{ c.name }}" data-desc="{{ c.description|default('', true) }}">
+
+            <!-- Title + rectangular, no-wrap badge -->
+            <div class="flex items-start justify-between">
+                <h2 class="text-lg font-semibold text-gray-900">{{ c.name }}</h2>
+                <span
+                    class="rounded-none whitespace-nowrap bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700">
+                    {{ c.prompt_count }} prompts
+                </span>
+            </div>
+
+            <!-- Description -->
+            <p class="mt-2 text-sm text-gray-600">{{ c.description }}</p>
+
+            <!-- Explore pinned bottom-right -->
+            <div class="mt-auto flex justify-end">
+                <div class="mt-4 flex items-center gap-2 text-sm text-gray-500">
+                    <span class="transition group-hover:translate-x-0.5">Explore</span>
+                    <svg class="h-4 w-4 transition group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor"
+                        aria-hidden="true">
+                        <path fill-rule="evenodd"
+                            d="M10.293 3.293a1 1 0 011.414 0l5 5a.997.997 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L13.586 11H4a1 1 0 110-2h9.586l-3.293-3.293a1 1 0 010-1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+
+    <!-- Empty state -->
+    <div id="empty-state"
+        class="hidden rounded-xl border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500">
+        No sub-categories match your search.
+    </div>
+</section>
+
+<!-- FLIP animation filter: cards flow up to fill gaps -->
+<script>
+    // utilities
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const DURATION = prefersReduced ? 0 : 300;
+    const EASE = "cubic-bezier(.2,.7,.3,1)";
+
+    const norm = s => (s || "").toString().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+    const includesLike = (h, q) => norm(h).includes(norm(q));
+    const debounce = (fn, d = 150) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), d); }; };
+
+    const grid = document.getElementById("cat-grid");
+    const input = document.getElementById("cat-search");
+    const empty = document.getElementById("empty-state");
+
+    function measureVisibleRects() {
+        const rects = new Map();
+        grid.querySelectorAll(".cat-card:not(.hidden)").forEach(el => {
+            rects.set(el.dataset.key, el.getBoundingClientRect());
+        });
+        return rects;
+    }
+
+    function applyFilter(q) {
+        // 1) FIRST: measure current positions of visible cards
+        const first = measureVisibleRects();
+
+        // 2) Apply filter (toggle hidden immediately to compute new layout)
+        let visibleCount = 0;
+        const cards = Array.from(grid.querySelectorAll(".cat-card"));
+
+        for (const el of cards) {
+            const match = !q.trim() ||
+                includesLike(el.dataset.name, q) ||
+                includesLike(el.dataset.desc, q);
+            if (match) {
+                el.classList.remove("hidden");
+                visibleCount++;
+            } else {
+                el.classList.add("hidden");
+            }
+        }
+
+        // Toggle empty state
+        empty.classList.toggle("hidden", visibleCount !== 0);
+
+        if (DURATION === 0) return; // no animation (reduced motion)
+
+        // 3) LAST: measure new positions of visible cards
+        const last = measureVisibleRects();
+
+        // 4) INVERT: for every visible card, compute delta and play transition
+        grid.querySelectorAll(".cat-card:not(.hidden)").forEach(el => {
+            const key = el.dataset.key;
+            const f = first.get(key);
+            const l = last.get(key);
+            if (!f || !l) {
+                // newly shown: fade & slight raise
+                el.style.opacity = "0";
+                el.style.transform = "translateY(8px)";
+                el.style.transition = "none";
+                // next frame -> animate in
+                requestAnimationFrame(() => {
+                    el.style.transition = `transform ${DURATION}ms ${EASE}, opacity ${DURATION}ms ${EASE}`;
+                    el.style.opacity = "1";
+                    el.style.transform = "translateY(0)";
+                });
+                return;
+            }
+
+            const dx = f.left - l.left;
+            const dy = f.top - l.top;
+
+            if (dx || dy) {
+                // invert
+                el.style.transform = `translate(${dx}px, ${dy}px)`;
+                el.style.transition = "none";
+                // play
+                requestAnimationFrame(() => {
+                    el.style.transition = `transform ${DURATION}ms ${EASE}`;
+                    el.style.transform = "translate(0,0)";
+                });
+            }
+        });
+
+        // 5) cleanup after animation
+        setTimeout(() => {
+            grid.querySelectorAll(".cat-card").forEach(el => {
+                el.style.transition = "";
+                el.style.transform = "";
+                el.style.opacity = "";
+            });
+        }, DURATION + 20);
+    }
+
+    // init
+    applyFilter("");
+
+    // on input
+    input?.addEventListener("input", debounce(e => applyFilter(e.target.value), 120));
+</script>
+
+
+{% endblock %}

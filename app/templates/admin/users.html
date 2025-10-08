@@ -1,0 +1,235 @@
+{% extends "admin/base.html" %}
+{% block title %}Manage Users - Admin{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    <h2 class="text-2xl font-bold mb-6">User Management</h2>
+    <div class="mb-8">
+        <form id="addUserForm" class="bg-white shadow rounded-lg p-6 space-y-4">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" name="username" id="username" required
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" name="email" id="email" required
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="role_id" class="block text-sm font-medium text-gray-700">Role</label>
+                <select name="role_id" id="role_id" required
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    {% for role in roles %}
+                    <option value="{{ role.id }}">{{ role.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Add
+                User</button>
+        </form>
+        <div id="userSuccess" class="fixed bottom-6 right-6 z-50 hidden transition-opacity duration-500">
+            <div class="flex items-center bg-green-500 text-white text-sm font-semibold px-6 py-3 rounded shadow-lg">
+                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                User added successfully!
+                <button onclick="hideUserSuccess()" class="ml-4 text-white hover:text-gray-200 focus:outline-none">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="userEditSuccess" class="fixed bottom-6 right-6 z-50 hidden transition-opacity duration-500">
+            <div class="flex items-center bg-blue-500 text-white text-sm font-semibold px-6 py-3 rounded shadow-lg">
+                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                User updated successfully!
+                <button onclick="hideUserEditSuccess()" class="ml-4 text-white hover:text-gray-200 focus:outline-none">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-medium mb-4">Users</h3>
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Username</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                    <th class="px-4 py-2"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td class="px-4 py-2">{{ user.username }}</td>
+                    <td class="px-4 py-2">{{ user.email }}</td>
+                    <td class="px-4 py-2">
+                        {% set role = roles | selectattr("id", "equalto", user.role_id) | list | first %}
+                        {{ role.name if role else "Unknown" }}
+                    </td>
+                    <td class="px-4 py-2">
+                        <button
+                            onclick="editUser({{ user.id }}, '{{ user.username }}', '{{ user.email }}', '{{ user.role_id }}')"
+                            class="text-blue-600 hover:text-blue-900 text-sm mr-2">Edit</button>
+                        <button onclick="deleteUser({{ user.id }})"
+                            class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div id="editUserModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Edit User</h3>
+        <form id="editUserForm" class="space-y-4">
+            <input type="hidden" id="editUserId">
+            <div>
+                <label for="editUsername" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" id="editUsername" required
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="editEmail" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="editEmail" required
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="editRoleId" class="block text-sm font-medium text-gray-700">Role</label>
+                <select id="editRoleId" required
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    {% for role in roles %}
+                    <option value="{{ role.id }}">{{ role.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeEditUserModal()"
+                    class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">Cancel</button>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Update
+                    User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showUserSuccess() {
+        const toast = document.getElementById('userSuccess');
+        toast.classList.remove('hidden');
+        toast.classList.add('opacity-100');
+        setTimeout(() => {
+            hideUserSuccess();
+        }, 1500);
+    }
+    function hideUserSuccess() {
+        const toast = document.getElementById('userSuccess');
+        toast.classList.add('hidden');
+        toast.classList.remove('opacity-100');
+    }
+    function showUserEditSuccess() {
+        const toast = document.getElementById('userEditSuccess');
+        toast.classList.remove('hidden');
+        toast.classList.add('opacity-100');
+        setTimeout(() => {
+            hideUserEditSuccess();
+        }, 1500);
+    }
+    function hideUserEditSuccess() {
+        const toast = document.getElementById('userEditSuccess');
+        toast.classList.add('hidden');
+        toast.classList.remove('opacity-100');
+    }
+    document.getElementById('addUserForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        try {
+            const response = await fetch('/secure-admin-2024/api/users', {
+                method: 'POST',
+                body: formData,
+                headers: { 'Accept': 'application/json' }
+            });
+            if (response.ok) {
+                showUserSuccess();
+                setTimeout(() => location.reload(), 1200);
+            } else {
+                const result = await response.json();
+                alert(result.detail || 'Error adding user');
+            }
+        } catch (error) {
+            alert('Network error');
+        }
+    });
+    function editUser(id, username, email, role_id) {
+        document.getElementById('editUserId').value = id;
+        document.getElementById('editUsername').value = username;
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editUserModal').classList.remove('hidden');
+        document.getElementById('editUserModal').classList.add('flex');
+        // Set role dropdown
+        const roleSelect = document.getElementById('editRoleId');
+        for (let i = 0; i < roleSelect.options.length; i++) {
+            if (roleSelect.options[i].value == role_id) {
+                roleSelect.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    function closeEditUserModal() {
+        document.getElementById('editUserModal').classList.add('hidden');
+        document.getElementById('editUserModal').classList.remove('flex');
+    }
+    document.getElementById('editUserForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const id = document.getElementById('editUserId').value;
+        const username = document.getElementById('editUsername').value;
+        const email = document.getElementById('editEmail').value;
+        const role_id = document.getElementById('editRoleId').value;
+        try {
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('email', email);
+            formData.append('role_id', role_id);
+            const response = await fetch(`/secure-admin-2024/api/users/${id}`, {
+                method: 'PATCH',
+                body: formData
+            });
+            if (response.ok) {
+                closeEditUserModal();
+                showUserEditSuccess();
+                setTimeout(() => location.reload(), 1200);
+            } else {
+                alert('Error updating user');
+            }
+        } catch (error) {
+            alert('Error updating user');
+        }
+    });
+    async function deleteUser(id) {
+        if (!confirm('Are you sure you want to delete this user?')) return;
+        try {
+            const response = await fetch(`/secure-admin-2024/api/users/${id}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error deleting user');
+            }
+        } catch (error) {
+            alert('Error deleting user');
+        }
+    }
+</script>
+{% endblock %}

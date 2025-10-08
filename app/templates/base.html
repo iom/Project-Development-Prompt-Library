@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <!-- Navigation -->
     <nav class="bg-white shadow-sm border-b border-gray-200">
@@ -17,7 +19,8 @@
                     <a href="/" class="text-xl font-bold text-blue-600">IOM Project Development Prompt Library</a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="/" class="text-gray-600 hover:text-blue-600">Library</a>
+                    <a href="/" class="text-gray-600 hover:text-blue-600">Home</a>
+                    <a href="/library" class="text-gray-600 hover:text-blue-600">Library</a>
                     <a href="/submit" class="text-gray-600 hover:text-blue-600">Submit Prompt</a>
                 </div>
             </div>
@@ -33,7 +36,7 @@
     <script>
         // Copy to clipboard functionality
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
+            navigator.clipboard.writeText(text).then(function () {
                 // Show success message
                 const msg = document.createElement('div');
                 msg.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md z-50';
@@ -46,4 +49,5 @@
     </script>
     {% block scripts %}{% endblock %}
 </body>
+
 </html>

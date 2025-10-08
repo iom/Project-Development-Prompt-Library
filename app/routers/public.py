@@ -8,6 +8,8 @@ from app.services.object_storage import object_storage_service
 from typing import List, Dict, Any
 import json
 import requests
+from sqlalchemy import func
+from sqlalchemy.orm import aliased
 
 router = APIRouter(tags=["public"])
 templates = Jinja2Templates(directory="app/templates")
@@ -190,6 +192,151 @@ async def submit_form(request: Request, session: SessionDep):
         "submit.html",
         {"request": request, "categories": categories}
     )
+
+
+@router.get("/", response_class=HTMLResponse)
+async def home_page(request: Request, session: SessionDep):
+     # Alias for sub-categories
+    Child = aliased(Category)
+
+    # Select only main categories (no parent) + count of their children
+    stmt = (
+        select(
+            Category,
+            func.count(Child.id).label("sub_count")
+        )
+        .join(Child, Child.parent_id == Category.id, isouter=True)   # LEFT JOIN
+        .where(Category.parent_id.is_(None))                         # main categories only
+        .group_by(Category.id)
+        .order_by(Category.sort_order)
+    )
+
+    rows = session.exec(stmt).all()  # -> list of (Category, sub_count)
+
+    # Flatten for template
+    categories = [
+        {
+            "id": cat.id,
+            "name": cat.name,
+            "slug": cat.slug,
+            "description": cat.description,
+            "sub_count": sub_count,
+        }
+        for cat, sub_count in rows
+    ]
+
+    return templates.TemplateResponse(
+        "home.html",
+        {
+            "request": request,
+            "categories": categories,
+        }
+    )
+
+@router.get("/subcategories/{slug}", response_class=HTMLResponse)
+async def category_children_page(slug: str, request: Request, session: SessionDep):
+    # 1) Find the parent (top-level) category by slug
+    parent = session.exec(
+        select(Category).where(
+            Category.slug == slug,
+            Category.parent_id.is_(None)
+        )
+    ).one_or_none()
+
+    if not parent:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    # 2) Load ALL categories to build a hierarchy and roll up counts
+    all_categories = session.exec(
+        select(Category).order_by(Category.sort_order)
+    ).all()
+
+    parent_map = {c.id: c.parent_id for c in all_categories}
+    # (optional) children_map if you need it later
+    # from collections import defaultdict
+    # children_map = defaultdict(list)
+    # for c in all_categories:
+    #     children_map[c.parent_id].append(c.id)
+
+    # 3) Count published prompts per category_id (leaf/base counts)
+    rows = session.exec(
+        select(Prompt.category_id, func.count(Prompt.id))
+        .where(Prompt.status == "published")
+        .group_by(Prompt.category_id)
+    ).all()
+    leaf_counts = {cat_id: cnt for (cat_id, cnt) in rows}
+
+    # 4) Initialize totals for every category id
+    totals = {c.id: leaf_counts.get(c.id, 0) for c in all_categories}
+
+    # 5) Roll up counts from children to parents using depth ordering
+    depth: dict[int, int] = {}
+
+    def get_depth(cid: int) -> int:
+        if cid in depth:
+            return depth[cid]
+        p = parent_map[cid]
+        depth[cid] = 0 if p is None else get_depth(p) + 1
+        return depth[cid]
+
+    for c in all_categories:
+        get_depth(c.id)
+
+    # deepest -> root
+    for cid, _d in sorted(depth.items(), key=lambda kv: -kv[1]):
+        p = parent_map[cid]
+        if p is not None:
+            totals[p] = totals.get(p, 0) + totals.get(cid, 0)
+
+    # 6) Fetch immediate children (the subcategories we want to render)
+    subcats = session.exec(
+        select(Category)
+        .where(Category.parent_id == parent.id)
+        .order_by(Category.sort_order)
+    ).all()
+
+    # 7) Build the payload the template expects
+    subcategories = [
+        {
+            "id": c.id,
+            "name": c.name,
+            "slug": c.slug,
+            "description": c.description,
+            "prompt_count": totals.get(c.id, 0),  # rolled-up prompts in this subtree
+        }
+        for c in subcats
+    ]
+
+    return templates.TemplateResponse(
+        "category_subcategories.html",
+        {
+            "request": request,
+            "parent": parent,
+            "subcategories": subcategories,
+        }
+    )
+
+
+@router.get("/library", response_class=HTMLResponse)
+async def library_page(
+    request: Request,
+    session: SessionDep,
+    category: str | None = Query(None),
+):
+    # Treat empty/invalid values as no category filter
+    if category in (None, "", "null", "undefined"):
+        selected = None
+    else:
+        try:
+            selected = int(category)
+        except (TypeError, ValueError):
+            selected = None
+
+    return templates.TemplateResponse(
+        "library.html",
+        {"request": request, "selected_category": selected}
+    )
+
 
 # File Serving Endpoints
 

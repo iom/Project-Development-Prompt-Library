@@ -1,15 +1,21 @@
 from typing import Optional, List
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
 import json
 
+class UserRole(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+
+    users: List["User"] = Relationship(back_populates="role")
+
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    email: str = Field(index=True, unique=True)
-    password_hash: str
-    role: str = Field(default="user")  # 'admin' or 'user'
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    username: str
+    email: str
+    role_id: Optional[int] = Field(default=None, foreign_key="userrole.id")
+    password_hash: Optional[str] = Field(default=None)
+    role: Optional[UserRole] = Relationship(back_populates="users")
 
 class Category(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -31,6 +37,7 @@ class Prompt(SQLModel, table=True):
     instructions: Optional[str] = None
     tags: Optional[str] = None  # JSON string for simplicity in v1
     status: str = Field(default="published")  # 'draft' | 'published' | 'archived'
+    liked_count: int = Field(default=0, nullable=False)
     created_by: Optional[int] = Field(default=None, foreign_key="user.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

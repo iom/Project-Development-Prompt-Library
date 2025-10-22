@@ -228,4 +228,4 @@ def _run_migrations():
 
 @app.get("/")
 async def root(request: Request):
-    return templates.TemplateResponse("library.html", {"request": request})
+    return templates.TemplateResponse("home.html", {"request": request})
